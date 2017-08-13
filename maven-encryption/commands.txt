@@ -1,0 +1,3 @@
+maven compile - עושה קימפול לקבצי JAVA
+maven test-compile - עושה קימפול לקבצי JUNIT
+mvn clean - מנקה את הקבצי class
