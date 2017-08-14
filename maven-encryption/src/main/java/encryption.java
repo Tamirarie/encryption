@@ -26,7 +26,6 @@ public class encryption {
 		try {
 			createKeyFile();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -117,7 +116,7 @@ public class encryption {
 	}
 
 	public void reverseAlgo() throws IOException, keyException{
-		printOptions();
+		UtilFunctions.printOptionsEnc();
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);
 		method = sn.nextInt();
@@ -148,7 +147,7 @@ public class encryption {
 
 
 	private void chooseMethod() throws IOException, keyException {
-		printOptions();
+		UtilFunctions.printOptionsEnc();
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);
 		method = sn.nextInt();
@@ -184,12 +183,7 @@ public class encryption {
 		fos.close();
 	}
 
-	private void printOptions() {
-		System.out.println("choose encryption method:");
-		System.out.println("1. Caesar algorithm");
-		System.out.println("2. Xor algorithm");
-		System.out.println("3. Multiplication algorithem");		
-	}
+	
 
 	private void initFiles() throws FileNotFoundException{
 		result = new File(file.getName()+".encrypted");

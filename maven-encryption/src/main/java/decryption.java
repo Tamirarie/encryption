@@ -99,7 +99,7 @@ public class decryption {
 		chooseMethod();
 	}
 	public void reverseAlgo() throws IOException, keyException{
-		printOptions();
+		UtilFunctions.printOptionsDec();
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);
 		method = sn.nextInt();
@@ -126,16 +126,8 @@ public class decryption {
 		}while(!done);	
 	}
 
-
-	private void printOptions() {
-		System.out.println("choose encryption method:");
-		System.out.println("1. Caesar algorithm");
-		System.out.println("2. Xor algorithm");
-		System.out.println("3. Multiplication algorithem");		
-	}
-
 	private void chooseMethod() throws IOException, keyException {
-		printOptions();
+		UtilFunctions.printOptionsDec();
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);
 		method = sn.nextInt();
@@ -167,11 +159,10 @@ public class decryption {
 				key = getKey();
 				System.out.println("key is : " +key);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
-		result = new File(file.getName()+"_decrypted."+getFileExtension(file));
+		result = new File(file.getName()+"_decrypted."+UtilFunctions.getFileExtension(file));
 		is = new FileInputStream(file);
 		os = new FileOutputStream(result);
 	}
@@ -183,7 +174,7 @@ public class decryption {
 		FileInputStream fis = new FileInputStream(inputFile);
 		fis.read(data, 0, data.length);
 		fis.close();
-		return byteArrayToInt(data);
+		return UtilFunctions.byteArrayToInt(data);
 	}
 
 	private String getKeyFile() {
@@ -209,18 +200,7 @@ public class decryption {
 		return f.getSelectedFile().toString();
 	}
 
-	private String getFileExtension(File file) {
-		String fileName = file.getName();
-		if(fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0)
-			return fileName.substring(fileName.indexOf(".")+1,fileName.lastIndexOf("."));        
-		else return "";
-	}
 	
-	public static int byteArrayToInt(byte[] b) 
-	{
-	    return   b[3] & 0xFF |
-	            (b[2] & 0xFF) << 8 |
-	            (b[1] & 0xFF) << 16 |
-	            (b[0] & 0xFF) << 24;
-	}
+	
+	
 }
