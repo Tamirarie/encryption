@@ -13,7 +13,7 @@ import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class decryption {
+public class Decryption {
 
 	int method=0;
 	String filePath = "";
@@ -22,17 +22,17 @@ public class decryption {
 	File result ,file;
 	InputStream is; OutputStream os;
 
-	public decryption(String name) throws IOException {
+	public Decryption(String name) throws IOException {
 		filePath = name;
 		sn = new Scanner(System.in);
 		file = new File(filePath);
 
 	}
 
-	public void multiplicationAlgo() throws IOException, keyException{
+	public void multiplicationAlgo() throws IOException, KeyException{
 		init();
 		if(key%2==0 || key==0){
-			throw new keyException("key is invalid: "+key);
+			throw new KeyException("key is invalid: "+key);
 		}
 
 		byte decrpytedKey=0;
@@ -92,18 +92,18 @@ public class decryption {
 
 	}
 
-	public void doubleAlgo() throws IOException, keyException{
+	public void doubleAlgo() throws IOException, KeyException{
 		// encryption first time
 		chooseMethod();
 		// encrypting second time
 		chooseMethod();
 	}
-	public void reverseAlgo() throws IOException, keyException{
+	public void reverseAlgo() throws IOException, KeyException{
 		UtilFunctions.printOptionsDec();
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);
 		method = sn.nextInt();
-		encryption e = new encryption(filePath);
+		Encryption e = new Encryption(filePath);
 		e.key = getKey();
 		boolean done ;
 		do{
@@ -126,7 +126,7 @@ public class decryption {
 		}while(!done);	
 	}
 
-	private void chooseMethod() throws IOException, keyException {
+	private void chooseMethod() throws IOException, KeyException {
 		UtilFunctions.printOptionsDec();
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);

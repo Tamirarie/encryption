@@ -9,7 +9,7 @@ import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.Scanner;
 
-public class encryption {
+public class Encryption {
 
 	String filePath = "";
 	int key;
@@ -18,7 +18,7 @@ public class encryption {
 	Random r;
 	int method = 0;
 
-	public encryption(String name) {
+	public Encryption(String name) {
 		filePath = name;
 		file = new File(filePath);
 		r=new Random();
@@ -30,10 +30,10 @@ public class encryption {
 		}
 	}
 
-	public void multiplicationAlgo() throws keyException, IOException{
+	public void multiplicationAlgo() throws KeyException, IOException{
 		System.out.println(key);
 		if(key%2==0 || key==0){
-			throw new keyException("key is invalid: "+key);
+			throw new KeyException("key is invalid: "+key);
 		}
 		initFiles();
 		boolean done = false;
@@ -63,10 +63,10 @@ public class encryption {
 
 	}
 
-	public void xorAlgo() throws IOException, keyException{
+	public void xorAlgo() throws IOException, KeyException{
 		System.out.println(key);
 		if(key == 0) {
-			throw new keyException("key is invalid: "+key);
+			throw new KeyException("key is invalid: "+key);
 		}
 		initFiles();
 		boolean done = false;
@@ -84,11 +84,11 @@ public class encryption {
 		os.close();
 	}
 
-	public void caesarAlgo() throws IOException, keyException {
+	public void caesarAlgo() throws IOException, KeyException {
 		System.out.println(key);
 
 		if(key == 0) {
-			throw new keyException("key is invalid: "+key);
+			throw new KeyException("key is invalid: "+key);
 		}
 		initFiles();
 		boolean done = false;
@@ -106,7 +106,7 @@ public class encryption {
 		is.close();
 		os.close();
 	}
-	public void doubleAlgo() throws IOException, keyException{
+	public void doubleAlgo() throws IOException, KeyException{
 		// encryption first time
 		chooseMethod();
 		// encrypting second time
@@ -115,12 +115,12 @@ public class encryption {
 
 	}
 
-	public void reverseAlgo() throws IOException, keyException{
+	public void reverseAlgo() throws IOException, KeyException{
 		UtilFunctions.printOptionsEnc();
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);
 		method = sn.nextInt();
-		decryption d = new decryption(filePath);
+		Decryption d = new Decryption(filePath);
 		d.key = r.nextInt();
 		boolean done ;
 		do{
@@ -146,7 +146,7 @@ public class encryption {
 	}
 
 
-	private void chooseMethod() throws IOException, keyException {
+	private void chooseMethod() throws IOException, KeyException {
 		UtilFunctions.printOptionsEnc();
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);

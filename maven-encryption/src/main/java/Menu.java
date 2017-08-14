@@ -11,13 +11,13 @@ import javax.swing.*;
 
 import javax.swing.JFileChooser;
 
-public class menu {
+public class Menu {
 	Scanner sn;
 	private int method = 0; //1 equals to encryption, 2 to decryption
 	private String fileName = "";
 	private String filePath = "";
 
-	public menu() {
+	public Menu() {
 		System.out.println("Welcome to our program!\nPlease Enter number "
 				+ "to Choose method:\n"
 				+"1: Encryption\n2: Decryption\n"
@@ -50,7 +50,7 @@ public class menu {
 
 	private void encryptHandle(String filePath) {
 		try{
-			encryption e = new encryption(filePath);
+			Encryption e = new Encryption(filePath);
 			System.out.println("choose encryption method:");
 			System.out.println("1. Caesar algorithm");
 			System.out.println("2. Xor algorithm");
@@ -85,7 +85,7 @@ public class menu {
 			}while(!done);
 		}
 
-		catch(IOException | keyException e){
+		catch(IOException | KeyException e){
 			System.out.println("Error: "+e);
 		}
 
@@ -93,7 +93,7 @@ public class menu {
 
 	private void decryptHandle(String filePath) {
 		try{
-			decryption d = new decryption(filePath);
+			Decryption d = new Decryption(filePath);
 			System.out.println("choose decryption method:");
 			System.out.println("1. Caesar algorithm");
 			System.out.println("2. Xor algorithm");
@@ -127,7 +127,7 @@ public class menu {
 			long estimatedTime = System.nanoTime() - startTime;
 			printTime(estimatedTime);
 		}
-		catch(IOException | keyException e){
+		catch(IOException | KeyException e){
 			System.out.println("Error: "+e);
 		}
 
@@ -160,6 +160,6 @@ public class menu {
 
 	public static void main(String[] args) {
 		@SuppressWarnings("unused")
-		menu m = new menu();
+		Menu m = new Menu();
 	}
 }
