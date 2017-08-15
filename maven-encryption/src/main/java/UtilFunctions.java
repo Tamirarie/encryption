@@ -28,19 +28,18 @@ public static byte[] intToByteArray(int a)
 		else return "";
 	}
 	
-	public static void printOptionsDec() {
-		System.out.println("choose encryption method:");
+	public static void printOptions(int method,int choose) {
+		System.out.println("choose " + ((method == 1) ? "encryption" : "decryption")+" method:");
 		System.out.println("1. Caesar algorithm");
 		System.out.println("2. Xor algorithm");
-		System.out.println("3. Multiplication algorithem");		
+		System.out.println("3. Multiplication algorithem");	
+		if(choose!=4)System.out.println("4. Double algorithem");		
+		if(choose!=5)System.out.println("5. Reverse algorithem");
+		if(choose!=6)System.out.println("6. Split algorithm");
+		
 	}
 	
-	public static void printOptionsEnc() {
-		System.out.println("choose encryption method:");
-		System.out.println("1. Caesar algorithm");
-		System.out.println("2. Xor algorithm");
-		System.out.println("3. Multiplication algorithem");		
-	}
+	
 
 	public static void printTime(long estimatedTime,int method) {
 		System.out.println("Total time of " + ((method == 1) 

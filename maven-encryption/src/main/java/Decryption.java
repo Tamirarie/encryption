@@ -6,38 +6,47 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.util.Scanner;
+import java.util.Vector;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
-public class Decryption {
+import lombok.Data;
+
+public @Data class Decryption {
 
 	int method=0;
 	String filePath = "";
 	Scanner sn ;
-	int key=-1;
 	File result ,file;
 	InputStream is; OutputStream os;
-
+	private int numOfDec ;
+	private Vector<Node> keysAlgo = new Vector<>();
+	public boolean isDecrypting;
+	public Encryption e ; // used for reverse algorithm
 	public Decryption(String name) throws IOException {
 		filePath = name;
 		sn = new Scanner(System.in);
 		file = new File(filePath);
+		isDecrypting = true;
 
 	}
 
-	public void multiplicationAlgo() throws IOException, KeyException{
+	public void multiplicationAlgo(boolean split) throws IOException, KeyException{
 		init();
-		if(key%2==0 || key==0){
-			throw new KeyException("key is invalid: "+key);
+		int currentKey = keysAlgo.get(numOfDec).key;
+
+		if(currentKey%2==0 || currentKey==0){
+			throw new KeyException("key is invalid: "+currentKey);
 		}
 
 		byte decrpytedKey=0;
 		for(byte i = Byte.MIN_VALUE; i<Byte.MAX_VALUE ; i++){
-			if((byte)(i*key)==1) decrpytedKey = i;
+			if((byte)(i*currentKey)==1) decrpytedKey = i;
 		}
 		System.out.println("decrypted key is:"+String.valueOf(decrpytedKey));
 
@@ -56,15 +65,16 @@ public class Decryption {
 		os.close();
 	}
 
-	public void xorAlgo() throws IOException{
+	public void xorAlgo(boolean split) throws IOException{
 		boolean done = false;
 		init();
+		int currentKey = keysAlgo.get(numOfDec).key;
 		while(!done){
 			int next = is.read();
 			if(next == -1) done = true;
 			else{
 				byte b = (byte) next;
-				byte c = (byte) (b^key);
+				byte c = (byte) (b^currentKey);
 				os.write(c);
 			}
 		}
@@ -73,15 +83,30 @@ public class Decryption {
 		os.close();
 	}
 
-	public void caesarAlgo() throws IOException {
+	public void caesarAlgo(boolean split) throws IOException {
 		boolean done = false;
 		init();
+		int currentKey = keysAlgo.get(numOfDec).getKey();
+		int extraKey=0;
+		if(split) {
+			extraKey = keysAlgo.get(numOfDec+1).key;
+			System.out.println("found about split algorithm!\nadding extrakey: "+extraKey);
+		}
+		int count = 1;
+
 		while(!done){
 			int next = is.read();
 			if(next == -1) done = true;
 			else{
 				byte b = (byte) next;
-				byte c = (byte) (b-key);
+				byte c = 0;
+				if(!split){
+					c = (byte) (b-currentKey);
+				}
+				else{
+					if(count%2 == 1) c=(byte) (b-currentKey);
+					else c = (byte) (b-extraKey);
+				}
 				if(c<Byte.MIN_VALUE) c = Byte.MAX_VALUE;
 				os.write(c);
 			}
@@ -92,31 +117,36 @@ public class Decryption {
 
 	}
 
-	public void doubleAlgo() throws IOException, KeyException{
+	public void doubleAlgo(boolean split) throws IOException, KeyException{
 		// encryption first time
-		chooseMethod();
+		chooseMethod(4,split);
+		numOfDec++;
 		// encrypting second time
-		chooseMethod();
+		chooseMethod(4,split);
 	}
-	public void reverseAlgo() throws IOException, KeyException{
-		UtilFunctions.printOptionsDec();
+	public void reverseAlgo(int choose,boolean split) throws IOException, KeyException{
+		UtilFunctions.printOptions(2,5);
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);
-		method = sn.nextInt();
-		Encryption e = new Encryption(filePath);
-		e.setKey(getKeyFromFile());
+		setMethod(sn.nextInt()); 
+
 		boolean done ;
 		do{
 			done = true;
-			switch (method) {
+			switch (getMethod()) {
 			case 1:
-				caesarAlgo();
+				e.caesarAlgo(split);
 				break;
 			case 2:
-				xorAlgo();
+				e.xorAlgo(split);
 				break;
 			case 3:
-				multiplicationAlgo();
+				e.multiplicationAlgo(split);
+				break;
+			case 4:
+				reverseAlgo(4,split);
+				e.setNumOfEnc(e.getNumOfEnc()+1);
+				reverseAlgo(4,split);
 				break;
 			default:
 				System.out.println("Error on input for method! try again");
@@ -126,23 +156,37 @@ public class Decryption {
 		}while(!done);	
 	}
 
-	private void chooseMethod() throws IOException, KeyException {
-		UtilFunctions.printOptionsDec();
+	public void chooseMethod(int choose,boolean split) throws IOException, KeyException {
+		if(choose != 4) UtilFunctions.printOptions(2,0);
+		else UtilFunctions.printOptions(2,4);
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);
-		method = sn.nextInt();
 		boolean done ;
 		do{
+			setMethod( sn.nextInt());
 			done = true;
-			switch (method) {
+			switch (getMethod()) {
 			case 1:
-				caesarAlgo();
+				caesarAlgo(split);
 				break;
 			case 2:
-				xorAlgo();
+				xorAlgo(split);
 				break;
 			case 3:
-				multiplicationAlgo();
+				multiplicationAlgo(split);
+				break;
+			case 4:
+				doubleAlgo(split);
+				break;
+			case 5:
+				e = new Encryption(filePath);
+				e.setEncrypting(false);
+				init();
+				e.setKeysAlgo(getKeysAlgo());
+				reverseAlgo(5,split);
+				break;
+			case 6:
+				chooseMethod(6, split);
 				break;
 			default:
 				System.out.println("Error on input for method! try again");
@@ -153,28 +197,42 @@ public class Decryption {
 	}
 
 	private void init() throws FileNotFoundException{
-		if(key == -1){
+		if(getKeysAlgo().isEmpty() && isDecrypting){
 			System.out.println("Enter key bin file");
 			try {
-				key = getKeyFromFile();
-				System.out.println("key is : " +key);
+				setKeysAlgo(getKeyFromFile());
+				System.out.println("keys are : " +getKeysAlgo());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
-		result = new File(file.getName()+"_decrypted."+UtilFunctions.getFileExtension(file));
+		if(isDecrypting)
+			result = new File(file.getName()+"_decrypted."+UtilFunctions.getFileExtension(file));
+
+		else{
+			result = new File(file.getName()+".encrypted");
+		}
+
 		is = new FileInputStream(file);
 		os = new FileOutputStream(result);
 	}
 
-	private int getKeyFromFile() throws IOException {
+	@SuppressWarnings("unchecked")
+	private Vector<Node> getKeyFromFile() throws IOException {
 		File inputFile = new File(getKeyFile());
-		double bytes = inputFile.length();
-		byte[] data = new byte[(int) bytes];
+
+
 		FileInputStream fis = new FileInputStream(inputFile);
-		fis.read(data, 0, data.length);
+		ObjectInputStream in = new ObjectInputStream(fis);
+		Vector<Node> keys = new Vector<>();
+		try {
+			keys = (Vector<Node>) in.readObject();
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 		fis.close();
-		return UtilFunctions.byteArrayToInt(data);
+
+		return keys;
 	}
 
 	private String getKeyFile() {
@@ -194,13 +252,13 @@ public class Decryption {
 				("BIN FILES (*.bin)", "bin");
 		f.setDialogTitle("Choose the binary key file for decryption");
 		f.setFileFilter(binfilter);
-		
+
 		f.showOpenDialog(null);
-		
+
 		return f.getSelectedFile().toString();
 	}
 
-	
-	
-	
+
+
+
 }

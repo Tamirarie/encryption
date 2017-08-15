@@ -1,11 +1,7 @@
 import java.awt.Component;
 import java.awt.HeadlessException;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.io.PrintStream;
 import java.util.Scanner;
 import javax.swing.*;
 
@@ -51,38 +47,8 @@ public class Menu {
 	private void encryptHandle(String filePath) {
 		try{
 			Encryption e = new Encryption(filePath);
-			System.out.println("choose encryption method:");
-			System.out.println("1. Caesar algorithm");
-			System.out.println("2. Xor algorithm");
-			System.out.println("3. Multiplication algorithem");
-			System.out.println("4. Double algorithm");
-			
-			boolean done ;
-			do{
-				done = true;
-				int input = sn.nextInt();
-				switch (input) {
-				case 1:
-					e.caesarAlgo();
-					break;
-				case 2:
-					e.xorAlgo();
-					break;
-				case 3:
-					e.multiplicationAlgo();
-					break;
-				case 4:
-					e.doubleAlgo();
-					break;
-				case 5:
-					e.reverseAlgo();
-					break;
-				default:
-					System.out.println("Error on input for method! try again");
-					done = false;
-					break;
-				}
-			}while(!done);
+			//UtilFunctions.printOptions(method);
+			e.chooseMethod(0,false);
 		}
 
 		catch(IOException | KeyException e){
@@ -94,35 +60,9 @@ public class Menu {
 	private void decryptHandle(String filePath) {
 		try{
 			Decryption d = new Decryption(filePath);
-			System.out.println("choose decryption method:");
-			System.out.println("1. Caesar algorithm");
-			System.out.println("2. Xor algorithm");
-			System.out.println("3. Multiplication algorithem");
-			boolean done ;
-			int input = sn.nextInt();
-			long startTime = System.nanoTime();    
-			do{
-				done = true;
-				// ... the code being measured ...    
-				switch (input) {
-				case 1:
-					d.caesarAlgo();
-					break;
-				case 2:
-					d.xorAlgo();
-					break;
-				case 3:
-					d.multiplicationAlgo();
-					break;
-				case 4:
-					d.doubleAlgo();
-					break;
-				default:
-					System.out.println("Error on input for method! try again");
-					done = false;
-					break;
-				}
-			}while(!done);
+			long startTime = System.nanoTime();
+			d.chooseMethod(0,false);
+			
 			///estimate the time that it took now:
 			long estimatedTime = System.nanoTime() - startTime;
 			UtilFunctions.printTime(estimatedTime,method);

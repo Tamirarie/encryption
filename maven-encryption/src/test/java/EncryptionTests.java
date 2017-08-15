@@ -2,6 +2,7 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PipedInputStream;
@@ -45,7 +46,7 @@ public class EncryptionTests {
 		assertTrue(f.exists());
 		assertTrue(f.delete());*/
 
-		PipedInputStream pipeIn = new PipedInputStream();
+		/*PipedInputStream pipeIn = new PipedInputStream();
 		PipedOutputStream pipeOut = new PipedOutputStream();
 		pipeIn.connect(pipeOut);
 		pipeOut.write(65);
@@ -56,8 +57,29 @@ public class EncryptionTests {
 		while((c = pipeIn.read() ) != -1)
 		{
 			System.out.print((char) c);
+		}*/
+	}
+	
+	@Test
+	public void testMultiAlgo() throws IOException {
+		File tempFile = testFolder.newFile("file.txt");
+		
+		PipedInputStream pipeIn = new PipedInputStream();
+		PipedOutputStream pipeOut = new PipedOutputStream();
+		ByteArrayOutputStream baos = new ByteArrayOutputStream();
+		
+		pipeIn.connect(pipeOut);
+		PrintStream ps = new PrintStream(pipeOut);
+		ps.print("hi");
+		Encryption e = new Encryption(tempFile.getAbsolutePath());
+		try {
+			e.multiplicationAlgo(false);
+		} catch (KeyException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
 		}
 	}
+	
 
 
 }
