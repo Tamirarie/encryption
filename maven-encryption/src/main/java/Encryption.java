@@ -8,17 +8,20 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Random;
 import java.util.Scanner;
+import lombok.Data;
 
-public class Encryption {
 
-	String filePath = "";
-	int key;
-	File result ,file;
-	InputStream is; OutputStream os;
-	Random r;
-	int method = 0;
+public @Data class Encryption {
+	
+	private String filePath = "";
+	private int key;
+	private File result ,file;
+	private InputStream is; OutputStream os;
+	private Random r;
+	private int method = 0;
 
 	public Encryption(String name) {
+		
 		filePath = name;
 		file = new File(filePath);
 		r=new Random();
@@ -189,5 +192,6 @@ public class Encryption {
 		result = new File(file.getName()+".encrypted");
 		is = new FileInputStream(file);
 		os = new FileOutputStream(result);
+		
 	}
 }

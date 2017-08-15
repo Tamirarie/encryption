@@ -125,18 +125,11 @@ public class Menu {
 			}while(!done);
 			///estimate the time that it took now:
 			long estimatedTime = System.nanoTime() - startTime;
-			printTime(estimatedTime);
+			UtilFunctions.printTime(estimatedTime,method);
 		}
 		catch(IOException | KeyException e){
 			System.out.println("Error: "+e);
 		}
-
-	}
-
-	private void printTime(long estimatedTime) {
-		System.out.println("Total time of " + ((method == 1) 
-				? "encryption" : "decryption")
-				+ ": " + estimatedTime);
 
 	}
 

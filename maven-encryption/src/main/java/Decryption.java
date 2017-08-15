@@ -104,7 +104,7 @@ public class Decryption {
 		Scanner sn = new Scanner(System.in);
 		method = sn.nextInt();
 		Encryption e = new Encryption(filePath);
-		e.key = getKey();
+		e.setKey(getKeyFromFile());
 		boolean done ;
 		do{
 			done = true;
@@ -156,7 +156,7 @@ public class Decryption {
 		if(key == -1){
 			System.out.println("Enter key bin file");
 			try {
-				key = getKey();
+				key = getKeyFromFile();
 				System.out.println("key is : " +key);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -167,7 +167,7 @@ public class Decryption {
 		os = new FileOutputStream(result);
 	}
 
-	private int getKey() throws IOException {
+	private int getKeyFromFile() throws IOException {
 		File inputFile = new File(getKeyFile());
 		double bytes = inputFile.length();
 		byte[] data = new byte[(int) bytes];
