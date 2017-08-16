@@ -4,25 +4,30 @@ import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.io.PrintStream;
+import java.util.Scanner;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class EncryptionTests {
+	private InputStream is; OutputStream os;
+	
 	@Rule
 	public TemporaryFolder testFolder = new TemporaryFolder();
 
 	@Test
 	public void testInTempFolder() throws IOException {
-		System.out.println(System.getProperty("user.dir"));
 		File tempFile = testFolder.newFile("file.txt");
 		File tempFolder = testFolder.newFolder("folder");
-		System.out.println("Test folder: " + tempFolder);
 		// test...
 	}
 
@@ -61,23 +66,29 @@ public class EncryptionTests {
 	}
 	
 	@Test
-	public void testMultiAlgo() throws IOException {
-		File tempFile = testFolder.newFile("file.txt");
-		
-		PipedInputStream pipeIn = new PipedInputStream();
-		PipedOutputStream pipeOut = new PipedOutputStream();
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		
-		pipeIn.connect(pipeOut);
-		PrintStream ps = new PrintStream(pipeOut);
-		ps.print("hi");
+	public void testCaesarAlgo() throws IOException {
+		File tempFile = testFolder.newFile("test.txt");
+		PrintStream ps = new PrintStream(tempFile);
+		String output = "hi, this is a test!";
+		ps.println(output);
+		ps.close();
 		Encryption e = new Encryption(tempFile.getAbsolutePath());
 		try {
-			e.multiplicationAlgo(false);
+			e.caesarAlgo(false);
+			e.createKeyFile();
 		} catch (KeyException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
+		String resPath = e.getResult().getAbsolutePath();
+		
+		Decryption d = new Decryption(resPath);
+		String key = "key.bin";
+		d.setKeyFile(key);
+		d.caesarAlgo(false);	
+		Scanner scanner = new Scanner(new File(d.getResult().getAbsolutePath()));
+		String content = scanner.useDelimiter("\\Z").next();
+		scanner.close();
+		assertEquals(output,content);
 	}
 	
 

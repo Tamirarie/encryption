@@ -1,4 +1,6 @@
 import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class UtilFunctions {
 	
@@ -42,10 +44,17 @@ public static byte[] intToByteArray(int a)
 	
 
 	public static void printTime(long estimatedTime,int method) {
+		
 		System.out.println("Total time of " + ((method == 1) 
 				? "encryption" : "decryption")
-				+ ": " + estimatedTime);
+				+ ": " + (double)estimatedTime/1000000000 + " in seconds");
 
+	}
+
+	public static void printStart(String className){
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+		Date date = new Date();
+		System.out.println("Started "+ className +" at "+ dateFormat.format(date));
 	}
 
 	

@@ -19,10 +19,17 @@ public class Menu {
 				+"1: Encryption\n2: Decryption\n"
 				);
 		sn = new Scanner(System.in);
+		//sn.useDelimiter("");
 		do{
-			method = sn.nextInt();
-			if(method !=1 && method != 2)
+			if(!sn.hasNextInt()) {
 				System.out.println("invalid input, please enter valid one...");
+			}
+			else{
+				method = sn.nextInt();
+				if(method !=1 && method != 2)
+					System.out.println("invalid input, please enter valid one...");
+			}
+			sn.nextLine();
 		} while(method !=1 && method != 2);
 
 		filePath = getPathFromUser();
@@ -49,6 +56,7 @@ public class Menu {
 			Encryption e = new Encryption(filePath);
 			//UtilFunctions.printOptions(method);
 			e.chooseMethod(0,false);
+			UtilFunctions.printTime(e.getEndTime(), method);
 		}
 
 		catch(IOException | KeyException e){
@@ -60,12 +68,13 @@ public class Menu {
 	private void decryptHandle(String filePath) {
 		try{
 			Decryption d = new Decryption(filePath);
-			long startTime = System.nanoTime();
+			//long startTime = System.nanoTime();
 			d.chooseMethod(0,false);
-			
+
 			///estimate the time that it took now:
-			long estimatedTime = System.nanoTime() - startTime;
-			UtilFunctions.printTime(estimatedTime,method);
+			UtilFunctions.printTime(d.getEndTime(), method);
+			//long endTime = System.nanoTime() - startTime;
+			//	UtilFunctions.printTime(estimatedTime,method);
 		}
 		catch(IOException | KeyException e){
 			System.out.println("Error: "+e);
@@ -86,8 +95,14 @@ public class Menu {
 		File workingDirectory = new File(System.getProperty("user.dir"));
 		f.setCurrentDirectory(workingDirectory);
 		f.setFileSelectionMode(JFileChooser.FILES_ONLY); 
-		f.showOpenDialog(null);
-		return f.getSelectedFile().toString();
+		int ret = f.showOpenDialog(null);
+		if(ret ==JFileChooser.APPROVE_OPTION)
+			return f.getSelectedFile().toString();
+		else{
+			System.out.println("File chooser was canclled!");
+			System.exit(0);
+			return "";
+		}
 	}
 
 
