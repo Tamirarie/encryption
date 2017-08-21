@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -20,34 +20,52 @@ import lombok.Data;
 
 public @Data class Decryption {
 
-	int method=0;
-	String filePath = "", keyFile = "";
-	Scanner sn ;
-	File result ,file;
-	InputStream is; OutputStream os;
+	private String filePath = "", keyFile = "";
+	private Scanner sn ;
+	private File result ,file;
+	private InputStream is; OutputStream os;
 	private int numOfDec ;
-	private Vector<Node> keysAlgo = new Vector<>();
-	public boolean isDecrypting;
-	public Encryption e ; // used for reverse algorithm
+	private Encryption e ; // used for reverse algorithm
 	long startTime,endTime;
-	private boolean encFolder;
-	private ArrayList<Integer> setOfActions;
-	private int count;
+	
+	private boolean encFolder,hasSet,isDecrypting,sync;
+	private LinkedList<Integer> setOfActions;
+	private Vector<Node> keysAlgo ;
 
 
-	public Decryption(String name,boolean encFolder,boolean isDecrypting) throws IOException {
-		filePath = name;
+	public Decryption(String name,boolean encFolder,boolean isDecrypting,boolean sync,boolean hasSet) throws IOException {
+		
+		setFilePath(name);
+		setDecrypting(isDecrypting);
+		setSn(new Scanner(System.in));
+		setFile(new File(name));
+		setStartTime(0);
+		setEndTime(0);
+		setEncFolder(encFolder);
+		setHasSet(hasSet);
+		setSync(sync);
+		setSetOfActions(new LinkedList<Integer>());
+		setKeysAlgo(new Vector<Node>());
+		
+		/*filePath = name;
 		this.isDecrypting = isDecrypting;
 		sn = new Scanner(System.in);
 		file = new File(filePath);
-		//isDecrypting = true;
 		startTime=endTime=0;
 		this.encFolder = encFolder;
-		setOfActions = new ArrayList<Integer>();
-		setCount(0);
+		this.hasSet = hasSet;
+		this.sync = sync;
+		setOfActions = new LinkedList<Integer>();
+		keysAlgo = new Vector<Node>();*/
+		
 		initKey();
-		sn = new Scanner(System.in);
-		if(setOfActions.isEmpty() && isDecrypting){
+		handleTypeMethod();
+
+	}
+
+
+	private void handleTypeMethod() throws IOException {
+		if(!isHasSet() && isDecrypting()){
 			initSetOfActions(-1);
 			System.out.println("Generated set of actions as follows!:\n");
 			System.out.println(setOfActions.toString());
@@ -55,18 +73,20 @@ public @Data class Decryption {
 			System.out.println(keysAlgo.toString());
 		}
 		try {
-			if(encFolder && isDecrypting){
-				handleFolderSync();
+			if(!isHasSet() && isEncFolder() && isDecrypting()){
+				if(isSync())
+					handleFolderSync();
+				else
+					handleFolderASync();
 			}
-			else if(isDecrypting){
+			else if(!isHasSet() && isDecrypting()){
 				initFiles();
-				chooseMethod(setOfActions.get(count), false);
+				chooseMethod(setOfActions, false);
 				//	closeStreams();
 			}
 		} catch (KeyException e) {
 			e.printStackTrace();
-		}
-
+		}		
 	}
 
 
@@ -79,13 +99,65 @@ public @Data class Decryption {
 		for (int i = 0; i < listOfFiles.length; i++) {
 			if (listOfFiles[i].isFile()) {
 				System.out.println("File " + listOfFiles[i].getName());
-				//int arr[] = convertIntegers(setOfActions);
 				file = listOfFiles[i].getAbsoluteFile();
+				@SuppressWarnings("unchecked")
+				LinkedList<Integer> set = (LinkedList<Integer>) setOfActions.clone();
 				initFiles();
-				chooseMethod(setOfActions.get(0),false);
-				count=0;
-				numOfDec=0;
+				chooseMethod(set,false);
+				//count=0;
+				setNumOfDec(0);
 			}
+		}
+	}
+
+	public class workerThread implements Runnable{
+		String fileName;
+		private LinkedList<Integer> ThreadActions;
+		private Vector<Node> ThreadKeys ;
+
+		@SuppressWarnings("unchecked")
+		public workerThread(String name,LinkedList<Integer> set,Vector<Node> keys) {
+			this.fileName=name;
+			this.ThreadActions = (LinkedList<Integer>) set.clone();
+			this.ThreadKeys = (Vector<Node>) keys.clone();
+		}
+
+		@Override
+		public void run() {
+			try {
+				Decryption d = new Decryption(fileName,true,true,false,true);
+				d.setOfActions = ThreadActions;
+				d.setKeysAlgo(ThreadKeys);
+				d.chooseMethod(ThreadActions, false);
+
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			} catch (KeyException e1) {
+				e1.printStackTrace();
+			}
+			System.out.println("Done encrypting file :" +fileName + " in ASync way");
+		}
+
+	}
+
+	private void handleFolderASync() {
+		File[] listOfFiles = file.listFiles();
+
+		if(listOfFiles.length == 0) {
+			System.out.println("Folder is empty! exit now!");
+			System.exit(0);
+		}		
+		Vector<String> filesAtFolder = new Vector<>();
+		for (int i = 0; i < listOfFiles.length; i++) {
+			if (listOfFiles[i].isFile()) {
+				System.out.println("File " + listOfFiles[i].getName());
+				filesAtFolder.add(listOfFiles[i].getAbsolutePath());
+			}
+		}
+		workerThread[] wt = new workerThread [listOfFiles.length];
+		for (int i = 0; i < filesAtFolder.size(); i++) {
+			wt[i] = new workerThread(filesAtFolder.get(i), setOfActions,keysAlgo);
+			new Thread(wt[i]).start();
 		}
 	}
 
@@ -102,7 +174,6 @@ public @Data class Decryption {
 
 	private void initSetOfActions(int choose) {
 		int input = -1;
-		//System.out.println("Enter input");
 		if (choose==4)UtilFunctions.printOptions(1,4);
 		else if (choose==5) UtilFunctions.printOptions(1, 5);
 		else if (choose==6) UtilFunctions.printOptions(1, 6);
@@ -280,29 +351,26 @@ public @Data class Decryption {
 
 	}
 
-	public void doubleAlgo(boolean split) throws IOException, KeyException{
+	private void doubleAlgo(LinkedList<Integer> set,boolean split) throws IOException, KeyException{
 		// encryption first time
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name);
-		count++;
-		chooseMethod(setOfActions.get(count),split);
+		//count++;
+		chooseMethod(set,split);
 		long temp = getEndTime();
 		numOfDec++;
 		// encrypting second time
-		count++;
-		chooseMethod(setOfActions.get(count),split);
+		//count++;
+		chooseMethod(set,split);
 		setEndTime(getEndTime()+ temp);
 
 	}
-	public void reverseAlgo(int choose,boolean split) throws IOException, KeyException{
+	private void reverseAlgo(LinkedList<Integer> set,boolean split) throws IOException, KeyException{
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name);
-		/*UtilFunctions.printOptions(2,5);
-		@SuppressWarnings("resource")
-		Scanner sn = new Scanner(System.in);
-		setMethod(sn.nextInt()); */
-		count++;
-		switch (setOfActions.get(count)) {
+		
+		int count = set.pop();
+		switch (count) {
 		case 1:
 			e.caesarAlgo(split);
 			break;
@@ -324,14 +392,9 @@ public @Data class Decryption {
 
 	}
 
-	public void chooseMethod(int choose,boolean split) throws IOException, KeyException {
-		/*if(choose != 4) UtilFunctions.printOptions(2,0);
-		else UtilFunctions.printOptions(2,4);
-		@SuppressWarnings("resource")
-		Scanner sn = new Scanner(System.in);*/
-		/*
-		setMethod( sn.nextInt());*/
-		switch (setOfActions.get(count)) {
+	private void chooseMethod(LinkedList<Integer> set,boolean split) throws IOException, KeyException {
+		int choose = set.pop();
+		switch (choose) {
 		case 1:
 			caesarAlgo(split);
 			break;
@@ -342,30 +405,30 @@ public @Data class Decryption {
 			multiplicationAlgo(split);
 			break;
 		case 4:
-			doubleAlgo(split);
+			doubleAlgo(set,split);
 			break;
 		case 5:
-			e = new Encryption(file.getAbsolutePath(),true,false);
+			e = new Encryption(file.getAbsolutePath(),true,false,false,false);
 			//e.setEncrypting(false);
 			//	init();
-			e.setSetOfActions(setOfActions);
+			e.setSetOfActions(set);
 			e.setKeysAlgo(getKeysAlgo());
-			reverseAlgo(5,split);
+			reverseAlgo(set,split);
 			break;
 		case 6:
-			count++;
-			chooseMethod(setOfActions.get(count), true);
+			//count++;
+			chooseMethod(set, true);
 			break;
 		default:
 			System.out.println("Error on input for method!");
 			break;
 		}
 
-		closeStreams();
+		//closeStreams();
 	}
 
 	private void initKey() throws FileNotFoundException{
-		if(getKeysAlgo().isEmpty() && isDecrypting){
+		if(getKeysAlgo().isEmpty() && isDecrypting && !hasSet){
 			System.out.println("Enter key bin file");
 			try {
 				if(keyFile == ""){

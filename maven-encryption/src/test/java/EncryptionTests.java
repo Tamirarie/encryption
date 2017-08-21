@@ -2,15 +2,8 @@ import static org.junit.Assert.*;
 
 import org.junit.Test;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.io.PrintStream;
 import java.util.Scanner;
 
@@ -19,7 +12,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 public class EncryptionTests {
-	private InputStream is; OutputStream os;
+//	private InputStream is; OutputStream os;
 	
 	@Rule
 	public TemporaryFolder testFolder = new TemporaryFolder();
@@ -28,13 +21,16 @@ public class EncryptionTests {
 	public void testInTempFolder() throws IOException {
 		File tempFile = testFolder.newFile("file.txt");
 		File tempFolder = testFolder.newFolder("folder");
+		assertTrue(tempFile.exists());
+		assertTrue(tempFolder.exists());
 		// test...
 	}
 
 	@Test
 	public void testEncryptionEmpty() throws IOException {
 		File tempFile = testFolder.newFile("file.txt");
-		Encryption e = new Encryption(tempFile.getAbsolutePath(),false,true);
+		@SuppressWarnings("unused")
+		Encryption e = new Encryption(tempFile.getAbsolutePath(),false,true,false,false);
 		//assertEquals(tempFile.getAbsolutePath(), e.filePath);
 		File f = new File("key.bin");
 		assertTrue(f.exists());
@@ -72,7 +68,7 @@ public class EncryptionTests {
 		String output = "hi, this is a test!";
 		ps.println(output);
 		ps.close();
-		Encryption e = new Encryption(tempFile.getAbsolutePath(),false,true);
+		Encryption e = new Encryption(tempFile.getAbsolutePath(),false,true,false,false);
 		try {
 			e.caesarAlgo(false);
 			e.createKeyFile();
@@ -81,7 +77,7 @@ public class EncryptionTests {
 		}
 		String resPath = e.getResult().getAbsolutePath();
 		
-		Decryption d = new Decryption(resPath,false,true);
+		Decryption d = new Decryption(resPath,false,true,false,false);
 		String key = "key.bin";
 		d.setKeyFile(key);
 		d.caesarAlgo(false);	
