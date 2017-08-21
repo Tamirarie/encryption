@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
-import java.util.Date;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -32,18 +30,125 @@ public @Data class Decryption {
 	public boolean isDecrypting;
 	public Encryption e ; // used for reverse algorithm
 	long startTime,endTime;
+	private boolean encFolder;
+	private ArrayList<Integer> setOfActions;
+	private int count;
 
-	public Decryption(String name) throws IOException {
+
+	public Decryption(String name,boolean encFolder,boolean isDecrypting) throws IOException {
 		filePath = name;
+		this.isDecrypting = isDecrypting;
 		sn = new Scanner(System.in);
 		file = new File(filePath);
-		isDecrypting = true;
+		//isDecrypting = true;
 		startTime=endTime=0;
+		this.encFolder = encFolder;
+		setOfActions = new ArrayList<Integer>();
+		setCount(0);
+		initKey();
+		sn = new Scanner(System.in);
+		if(setOfActions.isEmpty() && isDecrypting){
+			initSetOfActions(-1);
+			System.out.println("Generated set of actions as follows!:\n");
+			System.out.println(setOfActions.toString());
+			System.out.println("With the following keys:\n");
+			System.out.println(keysAlgo.toString());
+		}
+		try {
+			if(encFolder && isDecrypting){
+				handleFolderSync();
+			}
+			else if(isDecrypting){
+				initFiles();
+				chooseMethod(setOfActions.get(count), false);
+				//	closeStreams();
+			}
+		} catch (KeyException e) {
+			e.printStackTrace();
+		}
 
 	}
 
+
+	private void handleFolderSync() throws IOException, KeyException {
+		File[] listOfFiles = file.listFiles();
+		if(listOfFiles.length == 0) {
+			System.out.println("Folder is empty! exit now!");
+			System.exit(0);
+		}		
+		for (int i = 0; i < listOfFiles.length; i++) {
+			if (listOfFiles[i].isFile()) {
+				System.out.println("File " + listOfFiles[i].getName());
+				//int arr[] = convertIntegers(setOfActions);
+				file = listOfFiles[i].getAbsoluteFile();
+				initFiles();
+				chooseMethod(setOfActions.get(0),false);
+				count=0;
+				numOfDec=0;
+			}
+		}
+	}
+
+	private void closeStreams() {
+
+		try {
+			is.close();
+			os.close();		
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void initSetOfActions(int choose) {
+		int input = -1;
+		//System.out.println("Enter input");
+		if (choose==4)UtilFunctions.printOptions(1,4);
+		else if (choose==5) UtilFunctions.printOptions(1, 5);
+		else if (choose==6) UtilFunctions.printOptions(1, 6);
+		else UtilFunctions.printOptions(1, 0);
+		do{
+			input = getInput();
+			if(input==choose || (input > 6 || input < 1)){
+				System.out.println("Invalid input,please try again");
+			}
+		}while(input==choose || (input > 6 && input < 1));
+
+		setOfActions.add(input);
+		if(input == 4) { // double algo
+			initSetOfActions(input);
+			initSetOfActions(input);
+		}
+		else if(input == 5){ // reverse algo
+			initSetOfActions(input);
+		}
+		else if(input == 6){ //split algo
+			initSetOfActions(input);
+		}
+
+
+	}
+
+	private int getInput() {
+		int input = 0;
+		sn.useDelimiter("");
+		boolean done = false;
+		do{
+			if(!sn.hasNextInt()){
+				System.out.println("invalid input, please enter valid one...");
+			}
+			else{
+				input = sn.nextInt();
+				done = true;
+			}
+			sn.nextLine();
+		} while(!done);
+
+		return input;
+	}
+
 	public void multiplicationAlgo(boolean split) throws IOException, KeyException{
-		init();
+		initFiles();
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name);
 		setStartTime(System.nanoTime());
@@ -58,7 +163,8 @@ public @Data class Decryption {
 		int count = 1;
 
 		if(split){
-			extraKey = keysAlgo.get(numOfDec+1).key;
+			numOfDec++;
+			extraKey = keysAlgo.get(numOfDec).key;
 			System.out.println("found about split algorithm!\nadding extrakey: "+extraKey);
 		}
 
@@ -94,22 +200,23 @@ public @Data class Decryption {
 			}
 		}
 
-		is.close();
-		os.close();
+
 		setEndTime(System.nanoTime() - startTime);
 
 	}
 
 	public void xorAlgo(boolean split) throws IOException{
-		init();
+		initFiles();
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name);
 		setStartTime(System.nanoTime());
 		boolean done = false;
 		int currentKey = keysAlgo.get(numOfDec).key;
 		int extraKey=0;
+
 		if(split) {
-			extraKey = keysAlgo.get(numOfDec+1).key;
+			numOfDec++;
+			extraKey = keysAlgo.get(numOfDec).key;
 			System.out.println("found about split algorithm!\nadding extrakey: "+extraKey);
 		}
 		int count = 1;
@@ -131,21 +238,21 @@ public @Data class Decryption {
 			}
 		}
 
-		is.close();
-		os.close();
 		setEndTime(System.nanoTime() - startTime);
 	}
 
 	public void caesarAlgo(boolean split) throws IOException {
-		init();
+		initFiles();
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name);
 		setStartTime(System.nanoTime());
 		boolean done = false;
 		int currentKey = keysAlgo.get(numOfDec).getKey();
+		System.out.println("with the following key: "+currentKey);
 		int extraKey=0;
 		if(split) {
-			extraKey = keysAlgo.get(numOfDec+1).key;
+			numOfDec++;
+			extraKey = keysAlgo.get(numOfDec).key;
 			System.out.println("found about split algorithm!\nadding extrakey: "+extraKey);
 		}
 		int count = 1;
@@ -169,8 +276,6 @@ public @Data class Decryption {
 			}
 		}
 
-		is.close();
-		os.close();
 		setEndTime(System.nanoTime() - startTime);
 
 	}
@@ -179,90 +284,87 @@ public @Data class Decryption {
 		// encryption first time
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name);
-		chooseMethod(4,split);
+		count++;
+		chooseMethod(setOfActions.get(count),split);
 		long temp = getEndTime();
 		numOfDec++;
 		// encrypting second time
-		chooseMethod(4,split);
+		count++;
+		chooseMethod(setOfActions.get(count),split);
 		setEndTime(getEndTime()+ temp);
 
 	}
 	public void reverseAlgo(int choose,boolean split) throws IOException, KeyException{
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name);
-		UtilFunctions.printOptions(2,5);
+		/*UtilFunctions.printOptions(2,5);
 		@SuppressWarnings("resource")
 		Scanner sn = new Scanner(System.in);
-		setMethod(sn.nextInt()); 
-
-		boolean done ;
-		do{
-			done = true;
-			switch (getMethod()) {
-			case 1:
-				e.caesarAlgo(split);
-				break;
-			case 2:
-				e.xorAlgo(split);
-				break;
-			case 3:
-				e.multiplicationAlgo(split);
-				break;
-			case 4:
+		setMethod(sn.nextInt()); */
+		count++;
+		switch (setOfActions.get(count)) {
+		case 1:
+			e.caesarAlgo(split);
+			break;
+		case 2:
+			e.xorAlgo(split);
+			break;
+		case 3:
+			e.multiplicationAlgo(split);
+			break;
+			/*case 4:
 				reverseAlgo(4,split);
 				e.setNumOfEnc(e.getNumOfEnc()+1);
 				reverseAlgo(4,split);
-				break;
-			default:
-				System.out.println("Error on input for method! try again");
-				done = false;
-				break;
-			}
-		}while(!done);	
+				break;*/
+		default:
+			System.out.println("Error on input for method!");
+			break;
+		}
+
 	}
 
 	public void chooseMethod(int choose,boolean split) throws IOException, KeyException {
-		//if(keyFile == "") keyFile=getKeyFile();
-		if(choose != 4) UtilFunctions.printOptions(2,0);
+		/*if(choose != 4) UtilFunctions.printOptions(2,0);
 		else UtilFunctions.printOptions(2,4);
 		@SuppressWarnings("resource")
-		Scanner sn = new Scanner(System.in);
-		boolean done ;
-		do{
-			setMethod( sn.nextInt());
-			done = true;
-			switch (getMethod()) {
-			case 1:
-				caesarAlgo(split);
-				break;
-			case 2:
-				xorAlgo(split);
-				break;
-			case 3:
-				multiplicationAlgo(split);
-				break;
-			case 4:
-				doubleAlgo(split);
-				break;
-			case 5:
-				e = new Encryption(filePath);
-				e.setEncrypting(false);
-				init();
-				e.setKeysAlgo(getKeysAlgo());
-				reverseAlgo(5,split);
-				break;
-			case 6:
-				chooseMethod(6, true);
-				break;
-			default:
-				System.out.println("Error on input for method! try again");
-				done = false;
-				break;
-			}
-		}while(!done);		
+		Scanner sn = new Scanner(System.in);*/
+		/*
+		setMethod( sn.nextInt());*/
+		switch (setOfActions.get(count)) {
+		case 1:
+			caesarAlgo(split);
+			break;
+		case 2:
+			xorAlgo(split);
+			break;
+		case 3:
+			multiplicationAlgo(split);
+			break;
+		case 4:
+			doubleAlgo(split);
+			break;
+		case 5:
+			e = new Encryption(file.getAbsolutePath(),true,false);
+			//e.setEncrypting(false);
+			//	init();
+			e.setSetOfActions(setOfActions);
+			e.setKeysAlgo(getKeysAlgo());
+			reverseAlgo(5,split);
+			break;
+		case 6:
+			count++;
+			chooseMethod(setOfActions.get(count), true);
+			break;
+		default:
+			System.out.println("Error on input for method!");
+			break;
+		}
+
+		closeStreams();
 	}
 
-	private void init() throws FileNotFoundException{
+	private void initKey() throws FileNotFoundException{
 		if(getKeysAlgo().isEmpty() && isDecrypting){
 			System.out.println("Enter key bin file");
 			try {
@@ -275,15 +377,36 @@ public @Data class Decryption {
 				e.printStackTrace();
 			}
 		}
+
+	}
+
+	private void initFiles() throws FileNotFoundException{
 		if(isDecrypting)
-			result = new File(file.getName()+"_decrypted."+UtilFunctions.getFileExtension(file));
-		else{
-			result = new File(file.getName()+".encrypted");
+			if(encFolder){
+				File folder = new File("decryption");
+				if(!folder.exists()){
+					folder.mkdir();
+				}
+				result = new File("decryption/"+file.getName()+"_decrypted."+UtilFunctions.getFileExtension(file));
+			}
+			else
+				result = new File(file.getName()+"_decrypted."+UtilFunctions.getFileExtension(file));
+		else{// wer'e encrypting
+			if(encFolder){
+				File folder = new File("encryption");
+				if(!folder.exists()){
+					folder.mkdir();
+				}
+				result = new File("encryption/"+file.getName()+".encrypted");
+			}
+			else
+			{
+				result = new File(file.getName()+".encrypted");
+			}
 		}
 		is = new FileInputStream(file);
 		os = new FileOutputStream(result);
 	}
-
 	@SuppressWarnings("unchecked")
 	private Vector<Node> getKeyFromFile() throws IOException {
 		File inputFile = new File(keyFile);

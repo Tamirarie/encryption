@@ -34,7 +34,7 @@ public class EncryptionTests {
 	@Test
 	public void testEncryptionEmpty() throws IOException {
 		File tempFile = testFolder.newFile("file.txt");
-		Encryption e = new Encryption(tempFile.getAbsolutePath());
+		Encryption e = new Encryption(tempFile.getAbsolutePath(),false,true);
 		//assertEquals(tempFile.getAbsolutePath(), e.filePath);
 		File f = new File("key.bin");
 		assertTrue(f.exists());
@@ -72,7 +72,7 @@ public class EncryptionTests {
 		String output = "hi, this is a test!";
 		ps.println(output);
 		ps.close();
-		Encryption e = new Encryption(tempFile.getAbsolutePath());
+		Encryption e = new Encryption(tempFile.getAbsolutePath(),false,true);
 		try {
 			e.caesarAlgo(false);
 			e.createKeyFile();
@@ -81,7 +81,7 @@ public class EncryptionTests {
 		}
 		String resPath = e.getResult().getAbsolutePath();
 		
-		Decryption d = new Decryption(resPath);
+		Decryption d = new Decryption(resPath,false,true);
 		String key = "key.bin";
 		d.setKeyFile(key);
 		d.caesarAlgo(false);	
