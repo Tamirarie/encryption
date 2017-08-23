@@ -1,4 +1,7 @@
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -51,10 +54,23 @@ public static byte[] intToByteArray(int a)
 
 	}
 
-	public static void printStart(String className){
+	public static void printStart(String className,String fileName){
 		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
 		Date date = new Date();
-		System.out.println("Started "+ className +" at "+ dateFormat.format(date));
+		System.out.println("Started "+ className +" on File:"+ fileName+" at "+ dateFormat.format(date));
+	}
+	
+	public static void createRandomFile(File name) throws IOException{
+		RandomAccessFile f = new RandomAccessFile(name, "rw");
+        f.setLength(150 * 150 * 150);
+        String text = "this is a large file";
+        int len =(int)( f.length());
+        
+        while(f.getFilePointer() < len)
+        {
+        	f.writeBytes(text);
+        }
+        f.close();
 	}
 
 	

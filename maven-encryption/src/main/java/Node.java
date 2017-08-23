@@ -13,5 +13,9 @@ public @Data class Node implements Serializable {
 		this.key = key;
 		this.algoName = algoName;
 	}
+	public Node(Node node) {
+		this.key = node.key;
+		this.algoName = node.algoName;
+	}
 	
 }
