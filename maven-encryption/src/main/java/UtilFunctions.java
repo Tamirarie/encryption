@@ -3,6 +3,9 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.LinkedList;
+import java.util.Random;
+import java.util.Vector;
 
 public class UtilFunctions {
 
@@ -32,7 +35,7 @@ public class UtilFunctions {
 
 		System.out.println("Total time of " + ((method == 1) 
 				? "encryption" : "decryption")
-				+ ": " + (double)estimatedTime/1000000000 + " in seconds");
+				+ ": " + estimatedTime/1000 + " Seconds");
 
 	}
 
@@ -55,5 +58,36 @@ public class UtilFunctions {
 		f.close();
 	}
 
+	public static LinkedList<Integer> initSetList(int curr,int with) {
+		LinkedList<Integer> t = new LinkedList<Integer>();
+		t.add(curr);		// adding the current algo and the rest
+		t.add(with);
+		if(with == 4){ // double
+			//t.add(1); t.add(2);
+			t.add(5) ; t.add(6) ; t.add(1) ; t.add(2);
+			
+		}
+		else if(with == 5){ // reverse 
+			//t.add(1);
+			t.add(4) ; t.add(1); t.add(2);
+		}
+		else if(with == 6){ // split
+			t.add(1);
+		}
+		return t;
+	}
+	
+	public static int initRandomKey(){
+		return (new Random().nextInt());
+	}
+	public static boolean checkIfInvalid(Vector<Node> keys){
+		for (int i = 0; i < keys.size() ; i++) {
+			int key = keys.get(i).getKey();
+			if(key % 2 == 0 || key == 0){
+				return true;
+			}
+		}
+		return false;
+	}
 
 }

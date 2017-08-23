@@ -146,6 +146,7 @@ public @Data class Decryption {
 	 * wait for all of them to finish and then record the time it took
 	 */
 	private void handleFolderSync() throws IOException, KeyException {
+		long start = System.currentTimeMillis();
 		File[] listOfFiles = getFile().listFiles();
 		if(listOfFiles.length == 0) {
 			System.out.println("Folder is empty! exit now!");
@@ -162,8 +163,10 @@ public @Data class Decryption {
 				setNumOfDec(0);
 			}
 		}
+		setEndTime(System.currentTimeMillis() - start);
+
 	}
-	/*
+	/**
 	 * This class is used for the implementation
 	 *  of thread that execute certain file
 	 */
@@ -204,6 +207,7 @@ public @Data class Decryption {
 	 * wait for all of them to finish and then record the time it took
 	 */
 	private void handleFolderASync() {
+		long start = System.currentTimeMillis();
 		File[] listOfFiles = getFile().listFiles();
 
 		if(listOfFiles.length == 0) {
@@ -231,6 +235,7 @@ public @Data class Decryption {
 				e.printStackTrace();
 			}
 		}
+		setEndTime(System.currentTimeMillis() - start);
 	}
 
 
@@ -250,7 +255,7 @@ public @Data class Decryption {
 		initFiles();
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
-		setStartTime(System.nanoTime());
+		setStartTime(System.currentTimeMillis());
 		int currentKey = getKeysAlgo().get(getNumOfDec()).getKey();
 		if(currentKey%2==0 || currentKey==0){
 			throw new KeyException("key is invalid: "+currentKey);
@@ -303,7 +308,7 @@ public @Data class Decryption {
 		}
 
 
-		setEndTime(System.nanoTime() - getStartTime());
+		setEndTime(System.currentTimeMillis() - getStartTime());
 
 	}
 	/**
@@ -322,7 +327,7 @@ public @Data class Decryption {
 		initFiles();
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
-		setStartTime(System.nanoTime());
+		setStartTime(System.currentTimeMillis());
 		boolean done = false;
 		int currentKey = getKeysAlgo().get(getNumOfDec()).getKey();
 		int extraKey=0;
@@ -359,7 +364,7 @@ public @Data class Decryption {
 			}
 		}
 
-		setEndTime(System.nanoTime() - getStartTime());
+		setEndTime(System.currentTimeMillis() - getStartTime());
 	}
 
 	/**
@@ -378,7 +383,7 @@ public @Data class Decryption {
 		initFiles();
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
-		setStartTime(System.nanoTime());
+		setStartTime(System.currentTimeMillis());
 		boolean done = false;
 		int currentKey = getKeysAlgo().get(getNumOfDec()).getKey();
 		//System.out.println("with the following key: "+currentKey);
@@ -414,7 +419,7 @@ public @Data class Decryption {
 			}
 		}
 
-		setEndTime(System.nanoTime() - getStartTime());
+		setEndTime(System.currentTimeMillis() - getStartTime());
 
 	}
 
@@ -438,6 +443,7 @@ public @Data class Decryption {
 		if(!split) {
 			setNumOfDec(getNumOfDec()+1);
 		}
+		System.out.println(numOfDec);
 		chooseMethod(set,split);
 		setEndTime(getEndTime()+ temp);
 
@@ -467,12 +473,13 @@ public @Data class Decryption {
 
 	private void handleReverse(LinkedList<Integer> set, boolean split) throws IOException, KeyException {
 		int choose = set.pop();
-		if(choose == 4){
+		/*if(choose == 4){
 			handleReverse(set,split);
-			e.setNumOfEnc(e.getNumOfEnc()+1);
+			if(!split)e.setNumOfEnc(e.getNumOfEnc()+1);
 			handleReverse(set,split);
-		}
-		else if(choose == 6) handleReverse(set, true);
+			e.getChooseActions()[choose-1].chooseComplex(set, split);
+		}*/
+		/*else*/ if(choose == 6) handleReverse(set, true);
 		else if(choose <= 3 && choose >= 1){
 			e.getChooseActions()[choose-1].chooseSimple(split);
 		}
@@ -498,7 +505,7 @@ public @Data class Decryption {
 	 */
 	public void chooseMethod(LinkedList<Integer> set,boolean split) throws IOException, KeyException {
 		int choose = set.pop();
-		
+
 		if(choose <= 3 && choose >= 1)
 			chooseActions[choose-1].chooseSimple(split);
 		else if(choose <= 6){

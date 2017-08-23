@@ -105,8 +105,7 @@ public @Data class Encryption {
 	 */
 	private void handleFolderASync() {
 
-		long start = System.nanoTime();
-		setStartTime(start);
+		long start = System.currentTimeMillis();
 		String folderName = getFile().getAbsolutePath();
 		File[] listOfFiles = getFile().listFiles();
 		if(listOfFiles.length == 0) {
@@ -134,11 +133,10 @@ public @Data class Encryption {
 				e.printStackTrace();
 			}
 		}
-		setEndTime(System.nanoTime() - getStartTime());
+		setEndTime(System.currentTimeMillis() - start);
 		System.out.println("Finished encrypting folder: "+ folderName );
-		UtilFunctions.printTime(getEndTime(), getEncrypt());
 	}
-	
+
 
 	/**
 	 * This class is used for the implementation
@@ -184,8 +182,7 @@ public @Data class Encryption {
 	 * wait for all of them to finish and then record the time it took
 	 */
 	private void handleFolderSync() throws IOException, KeyException {
-		long start = System.nanoTime();
-		setStartTime(start);
+		long start = System.currentTimeMillis();
 		File[] listOfFiles = file.listFiles();
 		String folderName = file.getAbsolutePath();
 		if(listOfFiles.length == 0) {
@@ -204,9 +201,8 @@ public @Data class Encryption {
 				numOfEnc=0;
 			}
 		}
-		setEndTime(System.nanoTime() - startTime);
+		setEndTime(System.currentTimeMillis() - start);
 		System.out.println("Finished encrypting folder: "+ folderName );
-		UtilFunctions.printTime(getEndTime(), getEncrypt());
 	}
 
 	/**
@@ -290,7 +286,7 @@ public @Data class Encryption {
 	public void multiplicationAlgo(boolean split) throws KeyException, IOException{
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
-		long start = System.nanoTime();
+		long start = System.currentTimeMillis();
 		setStartTime(start);
 		initFiles();
 
@@ -335,11 +331,11 @@ public @Data class Encryption {
 
 		}
 
-		long end = System.nanoTime() - start;
+		long end = System.currentTimeMillis() - start;
 		setEndTime(end);
 
 	}
-	
+
 	/**
 	 * The Xor Algorithm used to encrypt file
 	 * it print it's name and then start record time for encryption
@@ -355,7 +351,7 @@ public @Data class Encryption {
 	public void xorAlgo(boolean split) throws IOException, KeyException{
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
-		setStartTime(System.nanoTime());
+		setStartTime(System.currentTimeMillis());
 		initFiles();
 
 		int curr = getKeysAlgo().get(getNumOfEnc()).getKey();
@@ -389,7 +385,7 @@ public @Data class Encryption {
 			}
 		}
 
-		setEndTime(System.nanoTime() - startTime);
+		setEndTime(System.currentTimeMillis() - getStartTime());
 
 	}
 
@@ -408,7 +404,7 @@ public @Data class Encryption {
 	public void caesarAlgo(boolean split) throws IOException, KeyException {
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
-		setStartTime(System.nanoTime());
+		setStartTime(System.currentTimeMillis());
 		initFiles();
 		int curr = getKeysAlgo().get(getNumOfEnc()).getKey();
 		System.out.println("with the following key: "+curr);
@@ -444,10 +440,10 @@ public @Data class Encryption {
 			}
 		}
 
-		setEndTime(System.nanoTime() - getStartTime());
+		setEndTime(System.currentTimeMillis() - getStartTime());
 
 	}
-	
+
 	/**
 	 * The Double Algorithm used to encrypt one file
 	 * it print it's name and then start record time for encryption
@@ -459,7 +455,7 @@ public @Data class Encryption {
 	 * @throws IOException in case of error on reading/writing file
 	 * @throws KeyException in case of invalid key that can cause data loss etc..
 	 */
-	
+
 	public void doubleAlgo(LinkedList<Integer> set,boolean split) throws IOException, KeyException{
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
@@ -470,7 +466,7 @@ public @Data class Encryption {
 		if(!split) {// or else we'll get an out of bounds
 			setNumOfEnc(getNumOfEnc()+1); 
 		}
-		
+
 		chooseMethod(set,split);
 		setEndTime(getEndTime()+ temp);
 
@@ -486,7 +482,7 @@ public @Data class Encryption {
 	 * @throws IOException in case of error on reading/writing file
 	 * @throws KeyException in case of invalid key that can cause data loss etc..
 	 */
-	
+
 	public void reverseAlgo(LinkedList<Integer> set,boolean split) throws IOException, KeyException{
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();		
 		UtilFunctions.printStart(name,getFilePath());
@@ -500,19 +496,20 @@ public @Data class Encryption {
 
 	private void handleReverse(LinkedList<Integer> set, boolean split) throws IOException, KeyException {
 		int choose = set.pop();
-		if(choose == 4){
+		/*if(choose == 4){
 			handleReverse(set,split);
-			d.setNumOfDec(d.getNumOfDec()+1);
+			if(!split) d.setNumOfDec(d.getNumOfDec()+1);
 			handleReverse(set,split);
-		}
-		else if(choose == 6) handleReverse(set, true);
+			d.getChooseActions()[choose-1].chooseComplex(set, split);
+		}*/
+		/*else*/ if(choose == 6) handleReverse(set, true);
 		else if(choose <= 3 && choose >= 1){
 			d.getChooseActions()[choose-1].chooseSimple(split);
 		}
 		else if (choose <= 6){
 			d.getChooseActions()[choose-1].chooseComplex(set, split);
 		}
-		
+
 	}
 	/**
 	 * The chooseMethod function used to handle set of actions
@@ -529,13 +526,13 @@ public @Data class Encryption {
 	 * 
 	 */
 	public void chooseMethod(LinkedList<Integer> set,boolean split) throws IOException, KeyException {
- 		int choose = set.pop();
- 		if(choose <= 3 && choose >= 1)
+		int choose = set.pop();
+		if(choose <= 3 && choose >= 1)
 			chooseActions[choose-1].chooseSimple(split);
 		else if(choose <= 6){
 			chooseActions[choose-1].chooseComplex(set, split);
 		}
-		
+
 
 	}
 

@@ -14,10 +14,16 @@ public class Menu {
 	private int entireDirectory; //1 equals to Entire, 2 to file
 	private int sync ; // 1 equals to sync,  2 to async
 	private Scanner sn; // scanner to read user input
+	Encryption e = null; Decryption d = null;
 
 	
 	public Menu() {
 		sn = new Scanner(System.in);
+		try {
+			UtilFunctions.createRandomFile(new File("bigFile.txt"));
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		System.out.println("Welcome to our program!\nPlease Enter number "
 				+ "to Choose method:\n"
 				+"1: Encryption\n2: Decryption\n"
@@ -67,41 +73,36 @@ public class Menu {
 				decryptHandle(filePath);	
 			}
 		}
+		UtilFunctions.printTime((method == 1) ? e.getEndTime() : d.getEndTime(), method);
 
 		sn.close();
 
 	}
 
-	@SuppressWarnings("unused")
 	private void handleASyncFolder() throws IOException, KeyException  {
 		folderPath = getPathFromUser();
 		System.out.println(((method == 1) 
 				? "encryption" : "decryption") + " simulation of folder $"+folderPath+"$");
-		Encryption e = null; Decryption d = null;
 		if(method == 1) e = new Encryption(folderPath,true,true,false,false);
 		else if(method == 2) d = new Decryption(folderPath, true,true,false,false);
 	}
 	
-	@SuppressWarnings("unused")
 	private void handleSyncFolder() throws IOException, KeyException { // not working
 		folderPath = getPathFromUser();
 		System.out.println(((method == 1) 
 				? "encryption" : "decryption") + " simulation of folder $"+folderPath+"$");
-		Encryption e = null; Decryption d = null;
 		if(method == 1) e = new Encryption(folderPath,true,true,true,false);
 		else if(method == 2) d = new Decryption(folderPath, true,true,true,false);
 
 	}
 	
-	@SuppressWarnings("unused")
 	private void encryptHandle(String filePath) {
-		Encryption e = new Encryption(filePath,false,true,true,false);	
+		e = new Encryption(filePath,false,true,true,false);	
 	}
 
-	@SuppressWarnings("unused")
 	private void decryptHandle(String filePath) {
 		try{
-			Decryption d = new Decryption(filePath,false,true,false,false);
+			d = new Decryption(filePath,false,true,false,false);
 		}
 		catch(IOException e){
 			System.out.println("Error: "+e);
@@ -110,8 +111,12 @@ public class Menu {
 	}
 
 	private String getPathFromUser() {
-		@SuppressWarnings("serial")
 		JFileChooser f = new JFileChooser(){
+			/**
+			 * 
+			 */
+			private static final long serialVersionUID = 1L;
+
 			protected JDialog createDialog(Component parent) throws HeadlessException {
 				JDialog dialog = super.createDialog(parent);
 				dialog.setLocationByPlatform(true);
@@ -159,6 +164,7 @@ public class Menu {
 	public static void main(String[] args) {
 		@SuppressWarnings("unused")
 		Menu m = new Menu();
+		
 	}
 
 	

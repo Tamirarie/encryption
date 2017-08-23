@@ -1,8 +1,5 @@
 import static org.junit.Assert.*;
-
 import org.junit.Test;
-import org.junit.experimental.theories.DataPoints;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -10,7 +7,6 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.Vector;
-
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
@@ -72,6 +68,7 @@ public class EncryptionTests {
 		Scanner scanner = new Scanner(new File(d.getResult().getAbsolutePath()));
 		String content = scanner.useDelimiter("\\Z").next();
 		scanner.close();
+		d.getResult().getAbsoluteFile().deleteOnExit();;
 		assertEquals(output,content);
 	}
 
@@ -103,6 +100,7 @@ public class EncryptionTests {
 		Scanner scanner = new Scanner(new File(d.getResult().getAbsolutePath()));
 		String content = scanner.useDelimiter("\\Z").next();
 		scanner.close();
+		d.getResult().getAbsoluteFile().deleteOnExit();;
 		assertEquals(output,content);
 	}
 
@@ -149,13 +147,14 @@ public class EncryptionTests {
 		Scanner scanner = new Scanner(new File(d.getResult().getAbsolutePath()));
 		String content = scanner.useDelimiter("\\Z").next();
 		scanner.close();
+		d.getResult().getAbsoluteFile().deleteOnExit();;
 		assertEquals(output,content);
 	}
 
 
 	@Test
 	public void testDoubleAlgo() throws IOException {
-		boolean caughtException = false;
+	//	boolean caughtException = false;
 		File tempFile = testFolder.newFile("reverseTest.txt");
 		PrintStream ps = new PrintStream(tempFile);
 		String output = "hi, this is a test!";
@@ -178,7 +177,7 @@ public class EncryptionTests {
 		try {
 			e.chooseMethod(t,false);
 		} catch (KeyException e1) {
-			caughtException = true;
+			//caughtException = true;
 		}
 		String resPath = e.getResult().getAbsolutePath();
 		t.add(4);		// adding double,caesar,and xor algo
@@ -190,13 +189,15 @@ public class EncryptionTests {
 		try {
 			d.chooseMethod(t, false);
 		} catch (KeyException e1) {
-			caughtException = true;
+		//	caughtException = true;
 		}
 		
 
 		Scanner scanner = new Scanner(new File(d.getResult().getAbsolutePath()));
 		String content = scanner.useDelimiter("\\Z").next();
 		scanner.close();
+		System.out.println("test:"+d.getResult().getAbsolutePath());
+		d.getResult().getAbsoluteFile().deleteOnExit();;
 		assertEquals(output,content);
 	}
 
@@ -211,17 +212,20 @@ public class EncryptionTests {
 			PrintStream ps = new PrintStream(tempFile);
 			String output = "hi, this is a test!";
 			ps.println(output);
-			ps.close();
+			ps.close();  //comment this to make test faster
+			/*Scanner scanner = new Scanner(tempFile); // uncomment the next two to read the file each time
+			String output = scanner.useDelimiter("\\Z").next();
+			*/
 			LinkedList<Integer> t = new LinkedList<Integer>();
-			t=initSetList(5,Algos[i]);
+			t=UtilFunctions.initSetList(5,Algos[i]);
 			
 			Encryption e = new Encryption(tempFile.getAbsolutePath(),false,true,false,true);
 			e.setSetOfActions(t);
 			Vector<Node> keys = new Vector<>();
-			keys.add(new Node(initRandomKey(), "reverse_"+ Algos[i]));
+			keys.add(new Node(UtilFunctions.initRandomKey(), "reverse_"+ Algos[i]));
 			if(Algos[i] == 4 | Algos[i] == 6) 
 				{
-				keys.add(new Node(initRandomKey(), "reverse_"+ Algos[i]));
+				keys.add(new Node(UtilFunctions.initRandomKey(), "reverse_"+ Algos[i]));
 				}
 			e.setKeysAlgo(keys);
 
@@ -231,7 +235,7 @@ public class EncryptionTests {
 				caughtException = true;
 			}
 			String resPath = e.getResult().getAbsolutePath();
-			t = initSetList(5,Algos[i]); // init again after reset it in encrypt
+			t = UtilFunctions.initSetList(5,Algos[i]); // init again after reset it in encrypt
 			Decryption d = new Decryption(resPath,false,true,false,true);
 			d.setKeysAlgo(keys);
 			try {
@@ -241,38 +245,21 @@ public class EncryptionTests {
 			}
 			if(Algos[i] == 3) 
 			{
-				if(checkIfInvalid(keys))
+				if(UtilFunctions.checkIfInvalid(keys))
 				{
 					assertTrue(caughtException);
 					continue;
 				}
 			}
-
 			Scanner scanner = new Scanner(new File(d.getResult().getAbsolutePath()));
 			String content = scanner.useDelimiter("\\Z").next();
 			scanner.close();
+			d.getResult().getAbsoluteFile().deleteOnExit();;
 			assertEquals(output,content);
 			
 			
 			
 		}
-	}
-
-	private LinkedList<Integer> initSetList(int curr,int with) {
-		LinkedList<Integer> t = new LinkedList<Integer>();
-		t.add(curr);		// adding the current algo and the rest
-		t.add(with);
-		if(with == 4){
-			t.add(1);
-			t.add(2);
-		}
-		else if(with == 5){
-			t.add(1);
-		}
-		else if(with == 6){
-			t.add(1);
-		}
-		return t;
 	}
 
 	@Test
@@ -288,19 +275,20 @@ public class EncryptionTests {
 		ps.println(output);
 		ps.close();
 		LinkedList<Integer> t = new LinkedList<Integer>();
-		t = initSetList(6, Algos[i]);
+		t = UtilFunctions.initSetList(6, Algos[i]);
 		Encryption e = new Encryption(tempFile.getAbsolutePath(),false,true,false,true);
 		e.setSetOfActions(t);
 
 		Vector<Node> keys = new Vector<>();
-		keys.add(new Node(initRandomKey(), "split_"+6));
-		keys.add(new Node(initRandomKey(), "split_"+Algos[i]));
+		keys.add(new Node(UtilFunctions.initRandomKey(), "split_"+6));
+		keys.add(new Node(UtilFunctions.initRandomKey(), "split_"+Algos[i]));
 		if(Algos[i] == 4 || Algos[i] == 6)
 			{
-			keys.add(new Node(initRandomKey(), "split_"+ Algos[i]));
+			keys.add(new Node(UtilFunctions.initRandomKey(), "split_"+ Algos[i]));
 			//keys.add(new Node(initRandomKey(), "split_"+ 4));
 			System.out.println(keys.toString());
 			}
+		keys.add(new Node(UtilFunctions.initRandomKey(), "split_"+ Algos[i]));
 
 
 		e.setKeysAlgo(keys);
@@ -311,7 +299,7 @@ public class EncryptionTests {
 			caughtException = true;
 		}
 		String resPath = e.getResult().getAbsolutePath();
-		t = initSetList(6, Algos[i]);
+		t = UtilFunctions.initSetList(6, Algos[i]);
 		Decryption d = new Decryption(resPath,false,true,false,true);
 		d.setKeysAlgo(keys);
 		try {
@@ -321,7 +309,7 @@ public class EncryptionTests {
 		}
 		if(Algos[i] == 3) 
 		{
-			if(checkIfInvalid(keys))
+			if(UtilFunctions.checkIfInvalid(keys))
 			{
 				assertTrue(caughtException);
 				continue;
@@ -330,28 +318,11 @@ public class EncryptionTests {
 		Scanner scanner = new Scanner(new File(d.getResult().getAbsolutePath()));
 		String content = scanner.useDelimiter("\\Z").next();
 		scanner.close();
+		d.getResult().getAbsoluteFile().deleteOnExit();;
 		assertEquals(output,content);
 		
 		}
 	}
 	
-	@Test
-	public void createLargeFiles() throws IOException{
-		/*File f = testFolder.newFile("largeFile.txt");
-		UtilFunctions.createRandomFile(f);
-		UtilFunctions.createRandomFile("testLarge.txt");
-*/	}
-
-	private int initRandomKey(){
-		return r.nextInt();
-	}
-	private boolean checkIfInvalid(Vector<Node> keys){
-		for (int i = 0; i < keys.size() ; i++) {
-			int key = keys.get(i).getKey();
-			if(key % 2 == 0 || key == 0){
-				return true;
-			}
-		}
-		return false;
-	}
+	
 }
