@@ -22,10 +22,6 @@ public class UtilFunctionsTests {
 		assertTrue(tempFile2.exists());
 	}
 	
-	@Test
-	public void testByteConversion(){
-		byte b[] = UtilFunctions.intToByteArray(8);
-		assertEquals(8, UtilFunctions.byteArrayToInt(b));
-	}
+	
 
 }

@@ -45,7 +45,7 @@ public class EncryptionTests {
 	}
 
 	@Test
-	public void testCaesarAlgo() throws IOException {
+	public void testCaesarAlgo() throws IOException, KeyException {
 		File tempFile = testFolder.newFile("test.txt");
 		PrintStream ps = new PrintStream(tempFile);
 		String output = "hi, this is a test!";
@@ -76,7 +76,7 @@ public class EncryptionTests {
 	}
 
 	@Test
-	public void testXorAlgo() throws IOException {
+	public void testXorAlgo() throws IOException, KeyException {
 		File tempFile = testFolder.newFile("test.txt");
 		PrintStream ps = new PrintStream(tempFile);
 		String output = "hi, this is a test!";
@@ -250,6 +250,9 @@ public class EncryptionTests {
 			String content = scanner.useDelimiter("\\Z").next();
 			scanner.close();
 			assertEquals(output,content);
+			
+			
+			
 		}
 	}
 

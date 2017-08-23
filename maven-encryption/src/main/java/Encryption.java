@@ -12,7 +12,13 @@ import java.util.Scanner;
 import java.util.Vector;
 import lombok.Data;
 
-
+/**
+ * This class consists of encryption algorithms and methods which can be used
+ * to encrypt files and folders
+ * 
+ * @author Tamir Arie
+ * 
+ */
 public @Data class Encryption {
 
 	private String filePath = "";
@@ -28,6 +34,16 @@ public @Data class Encryption {
 	private Vector<Node> keysAlgo;
 	private final int Encrypt = 1;
 
+	/**
+	 * This constructor initialize the arguments required for encryption,
+	 * and checks what should be executed:
+	 * @param name the name of file/folder to be encrypted
+	 * @param encFolder encrypt file or a folder,
+	 * @param sync encrypt them in sync method or async
+	 * @param isEncrypting check if it needs to be encrypted or decrypted
+	 * @param hasSet check if someone wants to supply the Set of actions or it needs to be created
+	 *  
+	 */
 	public Encryption(String name,boolean encFolder,boolean isEncrypting,boolean sync,boolean hasSet) {
 
 		setNumOfEnc(0);
@@ -47,15 +63,18 @@ public @Data class Encryption {
 
 
 	}
-
+	/**
+	 * This method handles the encryption 
+	 * by the parameters provided by the user
+	 */
 	private void handleTypeMethod() {
 		try {
 			if(!isHasSet()  && isEncrypting()){
 				initSetOfActions(-1);
-				System.out.println("Generated set of actions as follows!:\n");
-				System.out.println(setOfActions.toString());
-				System.out.println("With the following keys:\n");
-				System.out.println(keysAlgo.toString());
+				System.out.println("Generated set of actions as follows!:");
+				System.out.println(getSetOfActions().toString());
+				System.out.println("With the following keys:");
+				System.out.println(getKeysAlgo().toString());
 			}
 			if(!isHasSet()  && isEncFolder() && isEncrypting()){
 				if(isSync()){
@@ -70,7 +89,7 @@ public @Data class Encryption {
 			else if(!isHasSet() && isEncrypting()) // encrypting one file
 			{
 				createKeyFile();
-				chooseMethod(setOfActions, false);	
+				chooseMethod(getSetOfActions(), false);	
 			}
 
 		} catch (IOException | KeyException e) {
@@ -78,12 +97,18 @@ public @Data class Encryption {
 		}		
 	}
 
+	/**
+	 * This method handles the encryption in async method
+	 * it getting all the files in that folder and creating thread
+	 * for each one of them and starting it and after it started all of them
+	 * wait for all of them to finish and then record the time it took
+	 */
 	private void handleFolderASync() {
 
 		long start = System.nanoTime();
 		setStartTime(start);
-		String folderName = file.getAbsolutePath();
-		File[] listOfFiles = file.listFiles();
+		String folderName = getFile().getAbsolutePath();
+		File[] listOfFiles = getFile().listFiles();
 		if(listOfFiles.length == 0) {
 			System.out.println("Folder is empty! exit now!");
 			System.exit(0);
@@ -95,10 +120,10 @@ public @Data class Encryption {
 				filesAtFolder.add(listOfFiles[i].getAbsolutePath());
 			}
 		}
-		workerThread[] wt = new workerThread [listOfFiles.length];
+		workerThread[] wt = new workerThread [filesAtFolder.size()];
 		Thread threads[] = new Thread[wt.length];
 		for (int i = 0; i < filesAtFolder.size(); i++) {
-			wt[i] = new workerThread(filesAtFolder.get(i), setOfActions,keysAlgo);
+			wt[i] = new workerThread(filesAtFolder.get(i), getSetOfActions() ,getKeysAlgo());
 			threads[i] = new Thread(wt[i]);
 			threads[i].start();
 		}
@@ -109,10 +134,16 @@ public @Data class Encryption {
 				e.printStackTrace();
 			}
 		}
-		setEndTime(System.nanoTime() - startTime);
+		setEndTime(System.nanoTime() - getStartTime());
 		System.out.println("Finished encrypting folder: "+ folderName );
 		UtilFunctions.printTime(getEndTime(), getEncrypt());
 	}
+	
+
+	/**
+	 * This class is used for the implementation
+	 *  of thread that execute certain file
+	 */
 	public class workerThread implements Runnable{
 		String fileName;
 		private LinkedList<Integer> ThreadActions;
@@ -144,7 +175,14 @@ public @Data class Encryption {
 
 	}
 
-
+	/**
+	 * This method handles the encryption in sync method
+	 * it getting all the files in that folder and setting the filepath each time
+	 * for each one of them and starting chooseMethod function for each one of them
+	 * each them it creating a setofActions clone to not harm each other
+	 * and reseting the numOfEnc for the same reason
+	 * wait for all of them to finish and then record the time it took
+	 */
 	private void handleFolderSync() throws IOException, KeyException {
 		long start = System.nanoTime();
 		setStartTime(start);
@@ -171,6 +209,18 @@ public @Data class Encryption {
 		UtilFunctions.printTime(getEndTime(), getEncrypt());
 	}
 
+	/**
+	 * This method executed if there is no set and we're encrypting
+	 * it asks the user what algorithm he wants and acting by that:
+	 * if it's 1-3 : add that to setOfActions and create key and finish
+	 * if it's 4 (Double Algorithm) : add that and call twice (two another algorithm's) 
+	 * if it's 5 (Reverse Algorithm) : add that and call once more (which algorithm need to be reversed)
+	 * if it's 6 (Split Algorithm) : add that and one key
+	 *  and call once more (which algorithm need to be with 2 keys)
+	 *  @param choose representing the choose of last time for printing methods except that
+	 *  and not enabling to choose the same method
+	 *  
+	 */
 	private void initSetOfActions(int choose) {
 		int input = -1;
 		if (choose==4)UtilFunctions.printOptions(1,4);
@@ -203,11 +253,10 @@ public @Data class Encryption {
 
 	}
 
-	/*public void initKeys(){
-		for (int i = 0; i < setOfActions.size(); i++) {
-			keysAlgo.add(new Node(r.nextInt(),String.valueOf(setOfActions.get(i))));
-		}
-	}*/
+	/**
+	 * simple method to get one int user input
+	 * @return the user input int
+	 */
 	public int getInput() {
 		int input = 0;
 		sn.useDelimiter("");
@@ -226,6 +275,18 @@ public @Data class Encryption {
 		return input;
 	}
 
+	/**
+	 * The Multiplication Algorithm used to encrypt file
+	 * it print it's name and then start record time for encryption
+	 * initialize the files required to read and to write to
+	 * getting the keys for that algorithm (if split equals true - add the next key that in keys)
+	 * check that the keys are correct and cannot cause data loss
+	 * and then read the file byte by byte and encrypting it
+	 * after that set the end time to measure time it took to encrypt
+	 * @param split representing if we're at split algorithm
+	 * @throws IOException in case of error on reading/writing file
+	 * @throws KeyException in case of invalid key that can cause data loss etc..
+	 */
 	public void multiplicationAlgo(boolean split) throws KeyException, IOException{
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
@@ -233,11 +294,20 @@ public @Data class Encryption {
 		setStartTime(start);
 		initFiles();
 
-		int curr = keysAlgo.get(numOfEnc).getKey();
+		int curr = getKeysAlgo().get(getNumOfEnc()).getKey();
 		int extra = -1;
 		if(split){ 
-			numOfEnc++;
-			extra = keysAlgo.get(numOfEnc).getKey();	
+			setNumOfEnc(getNumOfEnc()+1);;
+			extra = getKeysAlgo().get(getNumOfEnc()).getKey();	
+		}
+		if(curr%2==0 ||curr==0){
+			throw new KeyException("Key is invalid: "+curr);
+		}
+		else if(split)
+		{
+			if(extra%2 == 0 || extra == 0){
+				throw new KeyException("Key is invalid: "+extra);
+			}
 		}
 		int count = 1;
 		boolean done = false;
@@ -269,7 +339,19 @@ public @Data class Encryption {
 		setEndTime(end);
 
 	}
-
+	
+	/**
+	 * The Xor Algorithm used to encrypt file
+	 * it print it's name and then start record time for encryption
+	 * initialize the files required to read and to write to
+	 * getting the keys for that algorithm (if split equals true - add the next key that in keys)
+	 * check that the keys are correct and cannot cause data loss
+	 * and then read the file byte by byte and encrypting it
+	 * after that set the end time to measure time it took to encrypt
+	 * @param split representing if we're at split algorithm
+	 * @throws IOException in case of error on reading/writing file
+	 * @throws KeyException in case of invalid key that can cause data loss etc..
+	 */
 	public void xorAlgo(boolean split) throws IOException, KeyException{
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
@@ -282,6 +364,12 @@ public @Data class Encryption {
 			setNumOfEnc(getNumOfEnc()+1);;
 			System.out.println(keysAlgo.toString());
 			extra = getKeysAlgo().get(getNumOfEnc()).getKey();	
+		}
+		if(curr == 0){
+			throw new KeyException("Key is invalid: "+curr);
+		}
+		else if(split && extra == 0){
+			throw new KeyException("Key is invalid: "+extra);
 		}
 		int count = 1;
 		boolean done = false;
@@ -305,6 +393,18 @@ public @Data class Encryption {
 
 	}
 
+	/**
+	 * The Caesar Algorithm used to encrypt file
+	 * it print it's name and then start record time for encryption
+	 * initialize the files required to read and to write to
+	 * getting the keys for that algorithm (if split equals true - add the next key that in keys)
+	 * check that the keys are correct and cannot cause data loss
+	 * and then read the file byte by byte and encrypting it
+	 * after that set the end time to measure time it took to encrypt
+	 * @param split representing if we're at split algorithm
+	 * @throws IOException in case of error on reading/writing file
+	 * @throws KeyException in case of invalid key that can cause data loss etc..
+	 */
 	public void caesarAlgo(boolean split) throws IOException, KeyException {
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
@@ -316,6 +416,12 @@ public @Data class Encryption {
 		if(split){ 
 			setNumOfEnc(getNumOfEnc()+1);
 			extra = getKeysAlgo().get(getNumOfEnc()).getKey();	
+		}
+		if(curr == 0){
+			throw new KeyException("Key is invalid: "+curr);
+		}
+		else if(split && extra == 0){
+			throw new KeyException("Key is invalid: "+extra);
 		}
 		int count = 1;
 		boolean done = false;
@@ -341,6 +447,19 @@ public @Data class Encryption {
 		setEndTime(System.nanoTime() - getStartTime());
 
 	}
+	
+	/**
+	 * The Double Algorithm used to encrypt one file
+	 * it print it's name and then start record time for encryption
+	 * calling the chooseMethod function twice and if split equals true increment the numOfEnc
+	 * for that (that we will read the next keys)
+	 * after that set the end time to measure time it took to encrypt
+	 * @param set representing the set of actions that remained undone
+	 * @param split representing if we're at split algorithm
+	 * @throws IOException in case of error on reading/writing file
+	 * @throws KeyException in case of invalid key that can cause data loss etc..
+	 */
+	
 	public void doubleAlgo(LinkedList<Integer> set,boolean split) throws IOException, KeyException{
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
@@ -348,25 +467,26 @@ public @Data class Encryption {
 		chooseMethod(set,split);
 		long temp = getEndTime();
 		// encrypting second time
-		if(!split) {
-			setNumOfEnc(getNumOfEnc()+1); // or else we'll get an out of bounds
+		if(!split) {// or else we'll get an out of bounds
+			setNumOfEnc(getNumOfEnc()+1); 
 		}
-		/*else{
-			swap(getKeysAlgo().get(numOfEnc-1),getKeysAlgo().get(numOfEnc)); // made bugs for some reason
-		}*/
+		
 		chooseMethod(set,split);
 		setEndTime(getEndTime()+ temp);
 
 	}
-	/*private void swap(Node node, Node node2) {
-		Node temp = new Node(getKeysAlgo().get(numOfEnc-1));
-		getKeysAlgo().get(numOfEnc-1).setKey(node2.key);
-		getKeysAlgo().get(numOfEnc-1).setAlgoName(node2.algoName);
-		getKeysAlgo().get(numOfEnc).setKey(temp.key);
-		getKeysAlgo().get(numOfEnc).setAlgoName(temp.algoName);
-		
-	}*/
-
+	/**
+	 * The Reverse Algorithm used to encrypt one file
+	 * it print it's name
+	 * it pops the next action that need to done at the given set and handle it in switch case
+	 * it setting the keys of the decryption object to the keys that been generated here
+	 * so it uses them and calls the method in decryption
+	 * @param set representing the set of actions that remained undone
+	 * @param split representing if we're at split algorithm
+	 * @throws IOException in case of error on reading/writing file
+	 * @throws KeyException in case of invalid key that can cause data loss etc..
+	 */
+	
 	public void reverseAlgo(LinkedList<Integer> set,boolean split) throws IOException, KeyException{
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		initFiles();
@@ -403,7 +523,20 @@ public @Data class Encryption {
 
 	}
 
-
+	/**
+	 * The chooseMethod function used to handle set of actions
+	 * it pops the next action that need to done at the given set and handle it in switch case
+	 * in case of choose=5 it creates decryption object and sending it the current file that
+	 * need to be encrypted and if wer'e encrypting it in folder and sending booleans that indicate
+	 * 1.false -that wer'e not decrypting (wer'e currently calling it from encryption)
+	 * 2.false -that wer'e not in sync (not relevant because wer'e handling one file here)
+	 * 3.true - that we have the set for the required operation (the set that wer'e using here)
+	 * @param set representing the set of actions that remained undone
+	 * @param split representing if we're at split algorithm
+	 * @throws IOException in case of error on reading/writing file
+	 * @throws KeyException in case of invalid key that can cause data loss etc..
+	 * 
+	 */
 	public void chooseMethod(LinkedList<Integer> set,boolean split) throws IOException, KeyException {
  		int choose = set.pop();
 
@@ -421,7 +554,7 @@ public @Data class Encryption {
 			doubleAlgo(set,split);
 			break;
 		case 5:
-			d = new Decryption(file.getAbsolutePath(),false,false,false,true);
+			d = new Decryption(file.getAbsolutePath(),isEncFolder(),false,false,true);
 			//d.setSetOfActions(setOfActions); // no need because we handle one method each time
 			reverseAlgo(set,split);
 			break;
@@ -436,6 +569,11 @@ public @Data class Encryption {
 
 	}
 
+	/**
+	 * function required for creating a key.bin file in folder encryption
+	 * or at current location and print to it the keys required later on to decryption
+	 * @throws IOException in case of error on reading/writing file
+	 */
 	public void createKeyFile() throws IOException {
 
 		File f =null;
@@ -459,6 +597,12 @@ public @Data class Encryption {
 		fos.close();
 	}
 
+	/**
+	 * Function required for initialize files in case of encrypting or decrypting
+	 * and then checks whether we encrypt in folder or at current location
+	 * and then creating file input and output streams for them
+	 * @throws FileNotFoundException in case file is not found
+	 */
 	private void initFiles() throws FileNotFoundException{
 		if(isEncrypting)
 			if(encFolder){
@@ -488,6 +632,10 @@ public @Data class Encryption {
 
 	}
 
+	/**
+	 * method called at the end of handling the encryption/decryption:
+	 * closing the streams inputstream and outputstream
+	 */
 	private void closeStreams() {
 		try {
 			is.close();
@@ -498,54 +646,5 @@ public @Data class Encryption {
 		}
 	}
 
-	/*
-private void initKeys(String name,boolean split) {
-	keysAlgo.add(new Node(r.nextInt(),name));
-	setCurrentKey(keysAlgo.get(numOfEnc).key);
-	if(name == "multiplicationAlgo"){
-		while(currentKey%2==0 ||currentKey==0){
-			invalidCurrKey(name);
-			//throw new KeyException("key is invalid: "+currentKey);
-		}
-	}
-	else if(name == "xorAlgo" || name =="caesarAlgo"){
-		while(currentKey == 0) {
-			invalidCurrKey(name);
-		}
 
-	}
-	System.out.println("Generated random key: " + currentKey);
-	if(split) {
-		setExtraKey(keysAlgo.get(numOfEnc+1).key);
-		if(name == "multiplicationAlgo"){
-			while(extraKey%2==0 ||extraKey==0){
-				invalidExtraKey(name);
-				//throw new KeyException("key is invalid: "+extraKey);
-			}
-		}
-		else if(name == "xorAlgo" || name =="caesarAlgo"){
-			while(extraKey == 0) {
-				invalidExtraKey(name);
-			}
-
-		}
-		System.out.println("found about split algorithm!\nAdding extrakey: "+extraKey);
-	}
-
-}
-
-private void invalidExtraKey(String name) {
-	System.out.println("key is invalid: "+extraKey);
-	keysAlgo.remove(numOfEnc+1);
-	keysAlgo.add(new Node(r.nextInt(),"Split"));
-	setExtraKey(keysAlgo.get(numOfEnc+1).key);
-}
-
-private void invalidCurrKey(String name) {
-	System.out.println("key is invalid: "+currentKey);
-	keysAlgo.remove(numOfEnc);
-	keysAlgo.add(new Node(r.nextInt(),name));
-	setCurrentKey(keysAlgo.get(numOfEnc).key);		
-}
-	 */
 }

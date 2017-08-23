@@ -9,12 +9,13 @@ import javax.swing.JFileChooser;
 
 public class Menu {
 	private int method = 0; //1 equals to encryption, 2 to decryption
-	private String fileName = "";
-	private String filePath , folderPath;
+	private String fileName = ""; // represnt only the file name such as: "test.txt"
+	private String filePath , folderPath; //represent the full file path and the folder path in case of folder
 	private int entireDirectory; //1 equals to Entire, 2 to file
 	private int sync ; // 1 equals to sync,  2 to async
-	private Scanner sn;
+	private Scanner sn; // scanner to read user input
 
+	
 	public Menu() {
 		sn = new Scanner(System.in);
 		System.out.println("Welcome to our program!\nPlease Enter number "
@@ -37,7 +38,7 @@ public class Menu {
 					e.printStackTrace();
 				}
 			}
-			else{
+			else{ // else we want to do this async way
 				try {
 					handleASyncFolder();
 				} catch (IOException | KeyException e) {
@@ -46,22 +47,23 @@ public class Menu {
 				
 			}
 		}
-		else{
+		else{ // else we want to handle only one file
 			filePath = getPathFromUser();
 			File f = new File(filePath);
 			while(!f.exists() || !f.isFile()) {
 				filePath = getPathFromUser();
 				f = new File(filePath);
 			}
+			
 			fileName = f.getName();
 			System.out.println(((method == 1) 
 					? "encryption" : "decryption") + " simulation of file $"+fileName+"$");
 
 
-			if(method == 1) {	
+			if(method == 1) { // we want to encrypt this file
 				encryptHandle(filePath);
 			}
-			else if (method == 2){	
+			else if (method == 2){	// we want to decrypt this file
 				decryptHandle(filePath);	
 			}
 		}
@@ -73,6 +75,8 @@ public class Menu {
 	@SuppressWarnings("unused")
 	private void handleASyncFolder() throws IOException, KeyException  {
 		folderPath = getPathFromUser();
+		System.out.println(((method == 1) 
+				? "encryption" : "decryption") + " simulation of folder $"+folderPath+"$");
 		Encryption e = null; Decryption d = null;
 		if(method == 1) e = new Encryption(folderPath,true,true,false,false);
 		else if(method == 2) d = new Decryption(folderPath, true,true,false,false);
@@ -81,6 +85,8 @@ public class Menu {
 	@SuppressWarnings("unused")
 	private void handleSyncFolder() throws IOException, KeyException { // not working
 		folderPath = getPathFromUser();
+		System.out.println(((method == 1) 
+				? "encryption" : "decryption") + " simulation of folder $"+folderPath+"$");
 		Encryption e = null; Decryption d = null;
 		if(method == 1) e = new Encryption(folderPath,true,true,true,false);
 		else if(method == 2) d = new Decryption(folderPath, true,true,true,false);
