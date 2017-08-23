@@ -126,7 +126,7 @@ public class EncryptionTests {
 		try {
 			e.multiplicationAlgo(false);
 		} catch (KeyException e1) {
-			e1.printStackTrace();
+			caughtException = true;
 		}
 		String resPath = e.getResult().getAbsolutePath();
 
@@ -155,6 +155,7 @@ public class EncryptionTests {
 
 	@Test
 	public void testDoubleAlgo() throws IOException {
+		boolean caughtException = false;
 		File tempFile = testFolder.newFile("reverseTest.txt");
 		PrintStream ps = new PrintStream(tempFile);
 		String output = "hi, this is a test!";
@@ -177,7 +178,7 @@ public class EncryptionTests {
 		try {
 			e.chooseMethod(t,false);
 		} catch (KeyException e1) {
-			e1.printStackTrace();
+			caughtException = true;
 		}
 		String resPath = e.getResult().getAbsolutePath();
 		t.add(4);		// adding double,caesar,and xor algo
@@ -189,8 +190,9 @@ public class EncryptionTests {
 		try {
 			d.chooseMethod(t, false);
 		} catch (KeyException e1) {
-			e1.printStackTrace();
+			caughtException = true;
 		}
+		
 
 		Scanner scanner = new Scanner(new File(d.getResult().getAbsolutePath()));
 		String content = scanner.useDelimiter("\\Z").next();

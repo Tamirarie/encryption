@@ -458,32 +458,29 @@ public @Data class Decryption {
 		String name = new Object(){}.getClass().getEnclosingMethod().getName();
 		UtilFunctions.printStart(name,getFilePath());
 		initFiles();
-		int count = set.pop();
-		switch (count) {
-		case 1:
-			e.caesarAlgo(split);
-			break;
-		case 2:
-			e.xorAlgo(split);
-			break;
-		case 3:
-			e.multiplicationAlgo(split);
-			break;
-		case 4:
-			reverseAlgo(set,split);
-			e.setNumOfEnc(e.getNumOfEnc()+1);
-			reverseAlgo(set,split);
-			break;
-		case 6:
-			UtilFunctions.printStart("splitAlgo",getFilePath());
-			reverseAlgo(set, true);
-			break;
-		default:
-			System.out.println("Error on input for method!");
-			break;
-		}
+		e = new Encryption(getFile().getAbsolutePath(),isEncFolder(),false,false,true);
+		e.setSetOfActions(set);
+		e.setKeysAlgo(getKeysAlgo());
+		handleReverse(set,split);
 
 	}
+
+	private void handleReverse(LinkedList<Integer> set, boolean split) throws IOException, KeyException {
+		int choose = set.pop();
+		if(choose == 4){
+			handleReverse(set,split);
+			e.setNumOfEnc(e.getNumOfEnc()+1);
+			handleReverse(set,split);
+		}
+		else if(choose == 6) handleReverse(set, true);
+		else if(choose <= 3 && choose >= 1){
+			e.getChooseActions()[choose-1].chooseSimple(split);
+		}
+		else if (choose <= 6){
+			e.getChooseActions()[choose-1].chooseComplex(set, split);
+		}
+	}
+
 
 	/**
 	 * The chooseMethod function used to handle set of actions
@@ -501,31 +498,11 @@ public @Data class Decryption {
 	 */
 	public void chooseMethod(LinkedList<Integer> set,boolean split) throws IOException, KeyException {
 		int choose = set.pop();
-		switch (choose) {
-		case 1:
-			caesarAlgo(split);
-			break;
-		case 2:
-			xorAlgo(split);
-			break;
-		case 3:
-			multiplicationAlgo(split);
-			break;
-		case 4:
-			doubleAlgo(set,split);
-			break;
-		case 5:
-			e = new Encryption(getFile().getAbsolutePath(),isEncFolder(),false,false,true);
-			e.setSetOfActions(set);
-			e.setKeysAlgo(getKeysAlgo());
-			reverseAlgo(set,split);
-			break;
-		case 6:
-			chooseMethod(set, true);
-			break;
-		default:
-			System.out.println("Error on input for method!");
-			break;
+		
+		if(choose <= 3 && choose >= 1)
+			chooseActions[choose-1].chooseSimple(split);
+		else if(choose <= 6){
+			chooseActions[choose-1].chooseComplex(set, split);
 		}
 
 	}
@@ -539,7 +516,7 @@ public @Data class Decryption {
 		if(getKeysAlgo().isEmpty() && isDecrypting() && !isHasSet()){
 			System.out.println("Enter key bin file");
 			try {
-				if(getKeyFile() == ""){
+				if(keyFile == ""){
 					setKeyFile(getKeyFile());
 				}
 				setKeysAlgo(getKeyFromFile());
@@ -672,6 +649,56 @@ public @Data class Decryption {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	/*
+	 * this is test to do design pattern
+	 */
+
+
+	private ChooseAction[] chooseActions = new ChooseAction[] {
+			new ChooseAction() { public void chooseSimple(boolean split) throws IOException, KeyException { caesarAlgo(split);; }
+			@Override
+			public void chooseComplex(LinkedList<Integer> set, boolean split) {				
+			} },
+			new ChooseAction() { public void chooseSimple(boolean split) throws IOException, KeyException { xorAlgo(split);}
+
+			@Override
+			public void chooseComplex(LinkedList<Integer> set, boolean split) {
+
+			} },
+			new ChooseAction() { public void chooseSimple(boolean split) throws IOException, KeyException { multiplicationAlgo(split); }
+
+			@Override
+			public void chooseComplex(LinkedList<Integer> set, boolean split) {
+
+			} },
+			new ChooseAction() { public void chooseComplex(LinkedList<Integer> set,boolean split) throws IOException, KeyException { doubleAlgo(set, split);}
+
+			@Override
+			public void chooseSimple(boolean split) throws IOException, KeyException {				
+			} },
+			new ChooseAction() { public void chooseComplex(LinkedList<Integer> set,boolean split) throws IOException, KeyException { reverseAlgo(set, split);}
+
+			@Override
+			public void chooseSimple(boolean split) throws IOException, KeyException {				
+			} },
+			new ChooseAction() { public void chooseComplex(LinkedList<Integer> set,boolean split) throws IOException, KeyException { splitAlgo(set, split);}
+
+			@Override
+			public void chooseSimple(boolean split) throws IOException, KeyException {				
+			} },
+	};
+	public void chooseSimple(int i,boolean split) throws IOException, KeyException {
+		chooseActions[i].chooseSimple(split);
+	}
+	private void splitAlgo(LinkedList<Integer> set, boolean split) throws IOException, KeyException {
+		chooseMethod(set, true);
+	}
+
+
+	public void chooseComplex(int i,LinkedList<Integer> set,boolean split) throws IOException, KeyException {
+		chooseActions[i].chooseComplex(set, split);
 	}
 
 
